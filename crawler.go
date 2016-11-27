@@ -41,9 +41,13 @@ type Sol struct {
 	Cameras     []string
 }
 
+type PhotoResponse struct {
+	Photos []Photo
+}
+
 func (n Nasa) crawl(s string) error {
-	u := fmt.Sprint("https://api.nasa.gov/mars-photos/api/v1/manifests/", s, "?api_key=", n.APIKey)
-	res, err := http.Get(u)
+	url1 := fmt.Sprint("https://api.nasa.gov/mars-photos/api/v1/manifests/", s, "?api_key=", n.APIKey)
+	res, err := http.Get(url1)
 	if err != nil {
 		log.Fatal(err)
 	} else {
@@ -51,21 +55,33 @@ func (n Nasa) crawl(s string) error {
 		defer res.Body.Close()
 		var r Rover
 		err := decoder.Decode(&r)
-		// log.Print("###### ", r)
-		log.Print("###### ", r.Manifest.Photos[666])
 		if err != nil {
 			log.Fatal(err)
 		}
-		for i, m := range r.Manifest.Photos {
-			fmt.Println("in the range loop", i, m, s)
-			u := fmt.Sprint("https://api.nasa.gov/mars-photos/api/v1/rovers/", s, "/photos?sol=", m.Sol, "&api_key=", n.APIKey)
-			p := new(Photo)
-			if err := p.seed(u); err != nil {
-				return err
-			}
-			// p.save()
-			// a = append(a, p)
+		// for i, m := range r.Manifest.Photos {
+		// fmt.Println("in the range loop", i, m, s)
+		url2 := fmt.Sprint("https://api.nasa.gov/mars-photos/api/v1/rovers/", s, "/photos?sol=", r.Manifest.Photos[0].Sol, "&api_key=", n.APIKey)
+		photos := parsePhotos(url2)
+		for _, ph := range photos {
+			ph.Rover = s
+			ph.save()
 		}
 	}
 	return nil
+}
+
+func parsePhotos(u string) []Photo {
+	var pr PhotoResponse
+	res, err := http.Get(u)
+	if err != nil {
+		log.Fatal(err)
+	} else {
+		defer res.Body.Close()
+		decoder := json.NewDecoder(res.Body)
+		err := decoder.Decode(&pr)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+	return pr.Photos
 }
