@@ -51,15 +51,21 @@ type Camera struct {
 }
 
 func (p *Photo) save() (err error) {
-	fmt.Println("saving photo", p.Id, p.Sol, p.Rover, p.Camera.Name, p.EarthDate, p.NasaImgSrc, p.S3ImgSrc)
-	statement := "INSERT INTO photos (id, sol, rover, camera, earthdate, nasaimgsrc) VALUES($1, $2, $3, $4, $5, $6) returning id"
+	p.copyToS3()
+	statement := "INSERT INTO photos (id, sol, rover, camera, earthdate, nasaimgsrc, s3imgsrc) VALUES($1, $2, $3, $4, $5, $6, $7) returning id"
 	stmt, err := db.Prepare(statement)
 	if err != nil {
 		fmt.Println("error", err)
-		return
+		return err
 	}
 	defer stmt.Close()
 	err = stmt.QueryRow(p.Id, p.Sol, p.Rover, p.Camera.Name, p.EarthDate, p.NasaImgSrc, p.S3ImgSrc).Scan(&p.Id)
+	if err != nil {
+		fmt.Println("error", err)
+		return err
+	} else {
+		log.Println("Successfully saved", p.Id, p.Sol, p.EarthDate)
+	}
 	return
 }
 

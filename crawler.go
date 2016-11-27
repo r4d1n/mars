@@ -35,7 +35,6 @@ func (n Nasa) crawl(s string) error {
 			photos := n.parsePhotos(url2)
 			for _, ph := range photos {
 				ph.Rover = s
-				// ph.copyToS3()
 				ph.save()
 			}
 		}
