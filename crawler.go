@@ -9,9 +9,8 @@ import (
 
 type Crawler interface {
 	loadConfig() Nasa
-	manifest() string
-	images() string
-	savePhoto() string
+	crawl() error
+	parsePhotos() []Photo
 }
 
 type Nasa struct {
@@ -31,11 +30,12 @@ func (n Nasa) crawl(s string) error {
 		if err != nil {
 			log.Fatal(err)
 		}
-		for i, m := range r.Manifest.Photos {
+		for i, _ := range r.Manifest.Photos {
 			url2 := fmt.Sprint("https://api.nasa.gov/mars-photos/api/v1/rovers/", s, "/photos?sol=", r.Manifest.Photos[i].Sol, "&api_key=", n.APIKey)
-			photos := parsePhotos(url2)
+			photos := n.parsePhotos(url2)
 			for _, ph := range photos {
 				ph.Rover = s
+				// ph.copyToS3()
 				ph.save()
 			}
 		}
@@ -43,7 +43,7 @@ func (n Nasa) crawl(s string) error {
 	return nil
 }
 
-func parsePhotos(u string) []Photo {
+func (n Nasa) parsePhotos(u string) []Photo {
 	var pr PhotoResponse
 	res, err := http.Get(u)
 	if err != nil {
