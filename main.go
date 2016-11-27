@@ -20,18 +20,17 @@ func init() {
 }
 
 func main() {
-	nc := new(NasaCrawler)
-	nc.loadConfig("./config.json")
-	pm := nc.getManifest("curiosity")
-	nc.getPhotoData(pm)
+	n := new(Nasa)
+	n.loadConfig("./config.json")
+	n.crawl("curiosity")
 }
 
-func (nc *NasaCrawler) loadConfig(path string) {
+func (n *Nasa) loadConfig(path string) {
 	file, err := ioutil.ReadFile(path)
 	if err != nil {
 		log.Fatal("Config File Missing. ", err)
 	}
-	err = json.Unmarshal(file, &nc)
+	err = json.Unmarshal(file, &n)
 	if err != nil {
 		log.Fatal("Config Parse Error: ", err)
 	}
