@@ -1,46 +1,29 @@
 package main
 
-import (
-	"encoding/json"
-	"fmt"
-	"log"
-	"net/http"
-)
-
-// structs and functions for organizing and storing data from the nasa rover API
+import "fmt"
 
 type Photo struct {
 	Id        int
 	Sol       int
-	Rover     string
-	Camera    string `json:"camera.full_name"`
+	Rover     string `json:"rover.name"`
+	Camera    Camera
 	EarthDate string `json:"earth_date"`
 	ImgSrc    string `json:"img_src"`
 }
 
-func (p Photo) save() error {
-	result, err := db.Exec("INSERT INTO photos VALUES($1, $2, $3, $4, $5)", p.Id, p.Sol, p.Camera, p.EarthDate, p.ImgSrc)
-	if err != nil {
-		return err
-	} else {
-		fmt.Println("saved image", p.Id, result)
-	}
-	return nil
+type Camera struct {
+	Name string
 }
 
-func (p Photo) seed(u string) error {
-	res, err := http.Get(u)
+func (p *Photo) save() (err error) {
+	fmt.Println("time to save", p.Id, p.Sol, p.Rover, p.Camera.Name, p.EarthDate, p.ImgSrc)
+	statement := "INSERT INTO photos (id, sol, rover, camera, earthdate, imgsrc) VALUES($1, $2, $3, $4, $5, $6) returning id"
+	stmt, err := db.Prepare(statement)
 	if err != nil {
-		log.Fatal(err)
-		return err
+		fmt.Println("error", err)
+		return
 	}
-	defer res.Body.Close()
-	decoder := json.NewDecoder(res.Body)
-	err = decoder.Decode(&p)
-	if err != nil {
-		fmt.Println("second error")
-		return err
-	}
-	fmt.Println("seeded", p, &p)
-	return nil
+	defer stmt.Close()
+	err = stmt.QueryRow(p.Id, p.Sol, p.Rover, p.Camera.Name, p.EarthDate, p.ImgSrc).Scan(&p.Id)
+	return
 }
