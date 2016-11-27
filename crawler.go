@@ -7,8 +7,6 @@ import (
 	"net/http"
 )
 
-// structs and functions for scraping the nasa rover API
-
 type Crawler interface {
 	loadConfig() Nasa
 	manifest() string
@@ -18,31 +16,6 @@ type Crawler interface {
 
 type Nasa struct {
 	APIKey string
-}
-
-type Rover struct {
-	Manifest Manifest `json:"photo_manifest"`
-}
-
-type Manifest struct {
-	Name        string
-	LandingDate string `json:"landing_date"`
-	LaunchDate  string `json:"launch_date"`
-	Status      string
-	MaxSol      int    `json:"max_sol"`
-	MaxDate     string `json:"max_date"`
-	TotalPhotos int    `json:"total_photos"`
-	Photos      []Sol
-}
-
-type Sol struct {
-	Sol         int
-	TotalPhotos int `json:"total_photos"`
-	Cameras     []string
-}
-
-type PhotoResponse struct {
-	Photos []Photo
 }
 
 func (n Nasa) crawl(s string) error {
@@ -58,13 +31,13 @@ func (n Nasa) crawl(s string) error {
 		if err != nil {
 			log.Fatal(err)
 		}
-		// for i, m := range r.Manifest.Photos {
-		// fmt.Println("in the range loop", i, m, s)
-		url2 := fmt.Sprint("https://api.nasa.gov/mars-photos/api/v1/rovers/", s, "/photos?sol=", r.Manifest.Photos[0].Sol, "&api_key=", n.APIKey)
-		photos := parsePhotos(url2)
-		for _, ph := range photos {
-			ph.Rover = s
-			ph.save()
+		for i, m := range r.Manifest.Photos {
+			url2 := fmt.Sprint("https://api.nasa.gov/mars-photos/api/v1/rovers/", s, "/photos?sol=", r.Manifest.Photos[i].Sol, "&api_key=", n.APIKey)
+			photos := parsePhotos(url2)
+			for _, ph := range photos {
+				ph.Rover = s
+				ph.save()
+			}
 		}
 	}
 	return nil
