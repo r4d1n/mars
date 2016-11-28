@@ -79,7 +79,7 @@ func (p *Photo) copyToS3(region string, bucket string) (err error) {
 		result, err := uploader.Upload(&s3manager.UploadInput{
 			Body:   reader,
 			Bucket: aws.String(bucket),
-			Key:    aws.String(fmt.Sprint(p.Id, ".jpg")),
+			Key:    aws.String(fmt.Sprintf("%s/%d.jpg", p.Rover, p.Id)),
 		})
 		if err != nil {
 			log.Fatalln("Failed to upload", err)
