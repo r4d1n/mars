@@ -32,8 +32,8 @@ func init() {
 }
 
 func main() {
-	n := Nasa{APIKey: c.APIKey, AWSRegion: c.AWSRegion, S3Bucket: c.S3Bucket}
-	n.crawl("curiosity")
+	s := Scraper{APIKey: c.APIKey, AWSRegion: c.AWSRegion, S3Bucket: c.S3Bucket}
+	s.crawl("curiosity")
 }
 
 func (c *Config) load(path string) {

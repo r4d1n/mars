@@ -7,14 +7,14 @@ import (
 	"net/http"
 )
 
-type Nasa struct {
+type Scraper struct {
 	APIKey    string
 	AWSRegion string
 	S3Bucket  string
 }
 
-func (n Nasa) crawl(s string) error {
-	murl := fmt.Sprint("https://api.nasa.gov/mars-photos/api/v1/manifests/", s, "?api_key=", n.APIKey)
+func (s Scraper) crawl(name string) error {
+	murl := fmt.Sprint("https://api.nasa.gov/mars-photos/api/v1/manifests/", name, "?api_key=", s.APIKey)
 	res, err := http.Get(murl)
 	if err != nil {
 		log.Fatal(err)
@@ -27,11 +27,11 @@ func (n Nasa) crawl(s string) error {
 			log.Fatal(err)
 		}
 		for i, _ := range r.Manifest.Photos {
-			purl := fmt.Sprint("https://api.nasa.gov/mars-photos/api/v1/rovers/", s, "/photos?sol=", r.Manifest.Photos[i].Sol, "&api_key=", n.APIKey)
+			purl := fmt.Sprint("https://api.nasa.gov/mars-photos/api/v1/rovers/", name, "/photos?sol=", r.Manifest.Photos[i].Sol, "&api_key=", s.APIKey)
 			photos := parsePhotos(purl)
 			for _, ph := range photos {
-				ph.Rover = s
-				ph.copyToS3(n.AWSRegion, n.S3Bucket)
+				ph.Rover = name
+				ph.copyToS3(s.AWSRegion, s.S3Bucket)
 				ph.save()
 			}
 		}
