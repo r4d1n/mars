@@ -3,35 +3,46 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 
 	_ "github.com/lib/pq"
 )
 
+type Config struct {
+	APIKey    string
+	DBName    string
+	DBUser    string
+	DBPass    string
+	AWSRegion string
+	S3Bucket  string
+}
+
 var db *sql.DB
+var c Config
 
 func init() {
+	c.load("./config.json")
 	var err error
-	db, err = sql.Open("postgres", "user=rover_user password=notamartian dbname=nasa_rover_data sslmode=disable")
+	db, err = sql.Open("postgres", fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", c.DBUser, c.DBPass, c.DBName))
 	if err = db.Ping(); err != nil {
 		log.Fatal(err)
 	}
 }
 
 func main() {
-	n := new(Nasa)
-	n.loadConfig("./config.json")
+	n := Nasa{APIKey: c.APIKey, AWSRegion: c.AWSRegion, S3Bucket: c.S3Bucket}
 	n.crawl("curiosity")
 }
 
-func (n *Nasa) loadConfig(path string) {
+func (c *Config) load(path string) {
 	file, err := ioutil.ReadFile(path)
 	if err != nil {
-		log.Fatal("Config File Missing. ", err)
+		log.Fatal("Missing config file: ", err)
 	}
-	err = json.Unmarshal(file, &n)
+	err = json.Unmarshal(file, &c)
 	if err != nil {
-		log.Fatal("Config Parse Error: ", err)
+		log.Fatal("Could not parse config file: ", err)
 	}
 }

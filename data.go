@@ -51,7 +51,6 @@ type Camera struct {
 }
 
 func (p *Photo) save() (err error) {
-	p.copyToS3()
 	statement := "INSERT INTO photos (id, sol, rover, camera, earthdate, nasaimgsrc, s3imgsrc) VALUES($1, $2, $3, $4, $5, $6, $7) returning id"
 	stmt, err := db.Prepare(statement)
 	if err != nil {
@@ -69,18 +68,18 @@ func (p *Photo) save() (err error) {
 	return
 }
 
-func (p *Photo) copyToS3() (err error) {
+func (p *Photo) copyToS3(region string, bucket string) (err error) {
 	res, err := http.Get(p.NasaImgSrc)
 	if err != nil {
 		return err
 	} else {
 		defer res.Body.Close()
 		reader := bufio.NewReader(res.Body)
-		uploader := s3manager.NewUploader(session.New(&aws.Config{Region: aws.String("us-east-1")}))
+		uploader := s3manager.NewUploader(session.New(&aws.Config{Region: aws.String(region)}))
 		result, err := uploader.Upload(&s3manager.UploadInput{
 			Body:   reader,
-			Bucket: aws.String("nasa-rover-photos"),
-			Key:    aws.String(fmt.Sprint(p.Id)),
+			Bucket: aws.String(bucket),
+			Key:    aws.String(fmt.Sprint(p.Id, ".jpg")),
 		})
 		if err != nil {
 			log.Fatalln("Failed to upload", err)

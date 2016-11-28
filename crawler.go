@@ -7,19 +7,15 @@ import (
 	"net/http"
 )
 
-type Crawler interface {
-	loadConfig() Nasa
-	crawl() error
-	parsePhotos() []Photo
-}
-
 type Nasa struct {
-	APIKey string
+	APIKey    string
+	AWSRegion string
+	S3Bucket  string
 }
 
 func (n Nasa) crawl(s string) error {
-	url1 := fmt.Sprint("https://api.nasa.gov/mars-photos/api/v1/manifests/", s, "?api_key=", n.APIKey)
-	res, err := http.Get(url1)
+	murl := fmt.Sprint("https://api.nasa.gov/mars-photos/api/v1/manifests/", s, "?api_key=", n.APIKey)
+	res, err := http.Get(murl)
 	if err != nil {
 		log.Fatal(err)
 	} else {
@@ -31,10 +27,11 @@ func (n Nasa) crawl(s string) error {
 			log.Fatal(err)
 		}
 		for i, _ := range r.Manifest.Photos {
-			url2 := fmt.Sprint("https://api.nasa.gov/mars-photos/api/v1/rovers/", s, "/photos?sol=", r.Manifest.Photos[i].Sol, "&api_key=", n.APIKey)
-			photos := n.parsePhotos(url2)
+			purl := fmt.Sprint("https://api.nasa.gov/mars-photos/api/v1/rovers/", s, "/photos?sol=", r.Manifest.Photos[i].Sol, "&api_key=", n.APIKey)
+			photos := parsePhotos(purl)
 			for _, ph := range photos {
 				ph.Rover = s
+				ph.copyToS3(n.AWSRegion, n.S3Bucket)
 				ph.save()
 			}
 		}
@@ -42,9 +39,9 @@ func (n Nasa) crawl(s string) error {
 	return nil
 }
 
-func (n Nasa) parsePhotos(u string) []Photo {
+func parsePhotos(url string) []Photo {
 	var pr PhotoResponse
-	res, err := http.Get(u)
+	res, err := http.Get(url)
 	if err != nil {
 		log.Fatal(err)
 	} else {
