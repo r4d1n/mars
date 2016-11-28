@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 
 	_ "github.com/lib/pq"
 )
@@ -32,8 +33,14 @@ func init() {
 }
 
 func main() {
+	if len(os.Args) < 2 {
+		log.Fatal("Please Specify a Rover Name")
+	}
 	s := Scraper{APIKey: c.APIKey, AWSRegion: c.AWSRegion, S3Bucket: c.S3Bucket}
-	s.crawl("curiosity")
+	err := s.crawl(os.Args[1])
+	if err != nil {
+		log.Fatal("An Error Occurred: ", err)
+	}
 }
 
 func (c *Config) load(path string) {

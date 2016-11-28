@@ -17,14 +17,14 @@ func (s Scraper) crawl(name string) error {
 	murl := fmt.Sprint("https://api.nasa.gov/mars-photos/api/v1/manifests/", name, "?api_key=", s.APIKey)
 	res, err := http.Get(murl)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	} else {
 		decoder := json.NewDecoder(res.Body)
 		defer res.Body.Close()
 		var r Rover
 		err := decoder.Decode(&r)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		for i, _ := range r.Manifest.Photos {
 			purl := fmt.Sprint("https://api.nasa.gov/mars-photos/api/v1/rovers/", name, "/photos?sol=", r.Manifest.Photos[i].Sol, "&api_key=", s.APIKey)
