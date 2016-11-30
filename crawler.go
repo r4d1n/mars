@@ -21,7 +21,7 @@ func (s Scraper) crawl(name string) error {
 	} else {
 		decoder := json.NewDecoder(res.Body)
 		defer res.Body.Close()
-		var r Rover
+		var r manifestResponse
 		err := decoder.Decode(&r)
 		if err != nil {
 			return err
