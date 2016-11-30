@@ -29,11 +29,24 @@ type Manifest struct {
 type Sol struct {
 	Sol         int
 	TotalPhotos int `json:"total_photos"`
-	Cameras     []string
 }
 
-type PhotoResponse struct {
-	Photos []Photo
+func (s *Sol) save() (err error) {
+	statement := "INSERT INTO sols (sol, totalphotos) VALUES($1, $2) returning sol"
+	stmt, err := db.Prepare(statement)
+	if err != nil {
+		fmt.Println("error", err)
+		return err
+	}
+	defer stmt.Close()
+	err = stmt.QueryRow(s.Sol, s.TotalPhotos).Scan(&s.Sol)
+	if err != nil {
+		fmt.Println("error", err)
+		return err
+	} else {
+		log.Println("Saved sol:", s.Sol, s.TotalPhotos)
+	}
+	return
 }
 
 type Photo struct {

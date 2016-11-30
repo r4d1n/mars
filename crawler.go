@@ -26,21 +26,26 @@ func (s Scraper) crawl(name string) error {
 		if err != nil {
 			return err
 		}
-		for i, _ := range r.Manifest.Photos {
-			purl := fmt.Sprint("https://api.nasa.gov/mars-photos/api/v1/rovers/", name, "/photos?sol=", r.Manifest.Photos[i].Sol, "&api_key=", s.APIKey)
+		for _, sol := range r.Manifest.Photos {
+			purl := fmt.Sprint("https://api.nasa.gov/mars-photos/api/v1/rovers/", name, "/photos?sol=", sol.Sol, "&api_key=", s.APIKey)
 			photos := parsePhotos(purl)
 			for _, ph := range photos {
 				ph.Rover = name
 				ph.copyToS3(s.AWSRegion, s.S3Bucket)
 				ph.save()
 			}
+			sol.save()
 		}
 	}
 	return nil
 }
 
+type photoResponse struct {
+	Photos []Photo
+}
+
 func parsePhotos(url string) []Photo {
-	var pr PhotoResponse
+	var pr photoResponse
 	res, err := http.Get(url)
 	if err != nil {
 		log.Fatal(err)

@@ -11,7 +11,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type Config struct {
+type config struct {
 	APIKey    string
 	DBName    string
 	DBUser    string
@@ -21,7 +21,7 @@ type Config struct {
 }
 
 var db *sql.DB
-var c Config
+var c config
 
 func init() {
 	c.load("./config.json")
@@ -43,7 +43,7 @@ func main() {
 	}
 }
 
-func (c *Config) load(path string) {
+func (c *config) load(path string) {
 	file, err := ioutil.ReadFile(path)
 	if err != nil {
 		log.Fatal("Missing config file: ", err)
