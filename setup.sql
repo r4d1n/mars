@@ -9,3 +9,5 @@ create table photos (
   nasaimgsrc varchar(255),
   s3imgsrc varchar(255)
 );
+
+alter table photos owner to rover;

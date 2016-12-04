@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -15,12 +16,10 @@ type Scraper struct {
 
 func (s Scraper) crawl(name string) error {
 	last, err := checkLastInsert(name)
-	fmt.Println(last)
 	if err != nil {
 		return err
 	}
 	murl := fmt.Sprint("https://api.nasa.gov/mars-photos/api/v1/manifests/", name, "?api_key=", s.APIKey)
-	fmt.Println(murl)
 	res, err := http.Get(murl)
 	if err != nil {
 		return err
@@ -29,18 +28,21 @@ func (s Scraper) crawl(name string) error {
 		defer res.Body.Close()
 		var r manifestResponse
 		err := decoder.Decode(&r)
+		sort.Sort(r.Manifest.Sols)
 		if err != nil {
 			return err
 		}
-		for i := last.Sol; i < len(r.Manifest.Photos); i++ {
-			purl := fmt.Sprint("https://api.nasa.gov/mars-photos/api/v1/rovers/", name, "/photos?sol=", r.Manifest.Photos[i].Sol, "&api_key=", s.APIKey)
-			fmt.Println(purl)
-			photos, err := parsePhotos(purl)
+		// make a Sol for most recent photo Sol and get index in manifest sols to find initial loop position
+		d := &Sol{Sol: last.Sol}
+		for i := r.Manifest.Sols.IndexOf(*d); i < len(r.Manifest.Sols); i++ {
+			purl := fmt.Sprint("https://api.nasa.gov/mars-photos/api/v1/rovers/", name, "/photos?sol=", r.Manifest.Sols[i].Sol, "&api_key=", s.APIKey)
+			photos, err := getPhotos(purl)
 			if err != nil {
 				return err
 			}
-			sort.Sort(photos)
-			for j := last.Id; j < len(photos); j++ {
+			index := photos.IndexOf(last)
+			// make start looping from initial position determined by last photo saved
+			for j := index + 1; j < len(photos); j++ {
 				ph := photos[j]
 				ph.Rover = name
 				err := ph.copyToS3(s.AWSRegion, s.S3Bucket)
@@ -60,18 +62,20 @@ func (s Scraper) crawl(name string) error {
 // find the last saved photo from this rover
 func checkLastInsert(rover string) (Photo, error) {
 	var p Photo
-	err := db.QueryRow("select id, sol from photos order by id desc limit 1").Scan(&p.Id, &p.Sol)
-	if err != nil {
+	err := db.QueryRow("select id, sol from photos where rover=$1 order by id desc limit 1", rover).Scan(&p.Id, &p.Sol)
+	if err == sql.ErrNoRows {
+		return p, nil
+	} else if err != nil {
 		return p, fmt.Errorf("retrieving last photo from rover %s: %v", rover, err)
 	}
 	return p, nil
 }
 
 type photoResponse struct {
-	Photos []Photo
+	Photos Photos
 }
 
-func parsePhotos(url string) (Photos, error) {
+func getPhotos(url string) (Photos, error) {
 	var pr photoResponse
 	res, err := http.Get(url)
 	if err != nil {
@@ -84,5 +88,6 @@ func parsePhotos(url string) (Photos, error) {
 			return nil, fmt.Errorf("parsing photo json: %v", err)
 		}
 	}
+	sort.Sort(pr.Photos)
 	return pr.Photos, nil
 }

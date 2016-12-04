@@ -22,12 +22,35 @@ type Manifest struct {
 	MaxSol      int    `json:"max_sol"`
 	MaxDate     string `json:"max_date"`
 	TotalPhotos int    `json:"total_photos"`
-	Photos      []Sol
+	Sols        Sols   `json:"photos"`
 }
 
 type Sol struct {
 	Sol         int
 	TotalPhotos int `json:"total_photos"`
+}
+
+type Sols []*Sol
+
+func (slice Sols) Len() int {
+	return len(slice)
+}
+
+func (slice Sols) Less(i, j int) bool {
+	return slice[i].Sol < slice[j].Sol
+}
+
+func (slice Sols) Swap(i, j int) {
+	slice[i], slice[j] = slice[j], slice[i]
+}
+
+func (c Sols) IndexOf(s Sol) int {
+	for i, val := range c {
+		if val.Sol == s.Sol {
+			return i
+		}
+	}
+	return -1
 }
 
 type Photo struct {
@@ -40,7 +63,7 @@ type Photo struct {
 	S3ImgSrc   string
 }
 
-type Photos []Photo
+type Photos []*Photo
 
 func (slice Photos) Len() int {
 	return len(slice)
@@ -52,6 +75,15 @@ func (slice Photos) Less(i, j int) bool {
 
 func (slice Photos) Swap(i, j int) {
 	slice[i], slice[j] = slice[j], slice[i]
+}
+
+func (c Photos) IndexOf(p Photo) int {
+	for i, val := range c {
+		if val.Id == p.Id {
+			return i
+		}
+	}
+	return -1
 }
 
 type Camera struct {
