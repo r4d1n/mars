@@ -39,17 +39,17 @@ func main() {
 	s := Scraper{APIKey: c.APIKey, AWSRegion: c.AWSRegion, S3Bucket: c.S3Bucket}
 	err := s.crawl(os.Args[1])
 	if err != nil {
-		log.Fatal("An Error Occurred: ", err)
+		log.Fatal(err)
 	}
 }
 
 func (c *config) load(path string) {
 	file, err := ioutil.ReadFile(path)
 	if err != nil {
-		log.Fatal("Missing config file: ", err)
+		log.Fatal("missing config file: ", err)
 	}
 	err = json.Unmarshal(file, &c)
 	if err != nil {
-		log.Fatal("Could not parse config file: ", err)
+		log.Fatal("could not parse config file: ", err)
 	}
 }

@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 )
 
@@ -28,13 +27,21 @@ func (s Scraper) crawl(name string) error {
 		}
 		for _, sol := range r.Manifest.Photos {
 			purl := fmt.Sprint("https://api.nasa.gov/mars-photos/api/v1/rovers/", name, "/photos?sol=", sol.Sol, "&api_key=", s.APIKey)
-			photos := parsePhotos(purl)
+			photos, err := parsePhotos(purl)
+			if err != nil {
+				return err
+			}
 			for _, ph := range photos {
 				ph.Rover = name
-				ph.copyToS3(s.AWSRegion, s.S3Bucket)
-				ph.save()
+				err := ph.copyToS3(s.AWSRegion, s.S3Bucket)
+				if err != nil {
+					return err
+				}
+				err = ph.save()
+				if err != nil {
+					return err
+				}
 			}
-			sol.save()
 		}
 	}
 	return nil
@@ -44,18 +51,18 @@ type photoResponse struct {
 	Photos []Photo
 }
 
-func parsePhotos(url string) []Photo {
+func parsePhotos(url string) ([]Photo, error) {
 	var pr photoResponse
 	res, err := http.Get(url)
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("retrieving url %s: %v", url, err)
 	} else {
 		defer res.Body.Close()
 		decoder := json.NewDecoder(res.Body)
 		err := decoder.Decode(&pr)
 		if err != nil {
-			log.Fatal(err)
+			return nil, fmt.Errorf("parsing photo json: %v", err)
 		}
 	}
-	return pr.Photos
+	return pr.Photos, nil
 }

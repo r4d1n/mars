@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -31,24 +30,6 @@ type Sol struct {
 	TotalPhotos int `json:"total_photos"`
 }
 
-func (s *Sol) save() (err error) {
-	statement := "INSERT INTO sols (sol, totalphotos) VALUES($1, $2) returning sol"
-	stmt, err := db.Prepare(statement)
-	if err != nil {
-		fmt.Println("error", err)
-		return err
-	}
-	defer stmt.Close()
-	err = stmt.QueryRow(s.Sol, s.TotalPhotos).Scan(&s.Sol)
-	if err != nil {
-		fmt.Println("error", err)
-		return err
-	} else {
-		log.Println("Saved sol:", s.Sol, s.TotalPhotos)
-	}
-	return
-}
-
 type Photo struct {
 	Id         int
 	Sol        int
@@ -67,16 +48,14 @@ func (p *Photo) save() (err error) {
 	statement := "INSERT INTO photos (id, sol, rover, camera, earthdate, nasaimgsrc, s3imgsrc) VALUES($1, $2, $3, $4, $5, $6, $7) returning id"
 	stmt, err := db.Prepare(statement)
 	if err != nil {
-		fmt.Println("error", err)
-		return err
+		return fmt.Errorf("saving image %d to db: %v", p.Id, err)
 	}
 	defer stmt.Close()
 	err = stmt.QueryRow(p.Id, p.Sol, p.Rover, p.Camera.Name, p.EarthDate, p.NasaImgSrc, p.S3ImgSrc).Scan(&p.Id)
 	if err != nil {
-		fmt.Println("error", err)
-		return err
+		return fmt.Errorf("saving image %d to db: %v", p.Id, err)
 	} else {
-		log.Println("Successfully saved", p.Id, p.Sol, p.EarthDate)
+		fmt.Printf("successfully saved data for image %d \n", p.Id)
 	}
 	return
 }
@@ -84,7 +63,7 @@ func (p *Photo) save() (err error) {
 func (p *Photo) copyToS3(region string, bucket string) (err error) {
 	res, err := http.Get(p.NasaImgSrc)
 	if err != nil {
-		return err
+		return fmt.Errorf("retrieving image %d from nasa: %v", p.Id, err)
 	} else {
 		defer res.Body.Close()
 		reader := bufio.NewReader(res.Body)
@@ -95,9 +74,9 @@ func (p *Photo) copyToS3(region string, bucket string) (err error) {
 			Key:    aws.String(fmt.Sprintf("%s/%d.jpg", p.Rover, p.Id)),
 		})
 		if err != nil {
-			log.Fatalln("Failed to upload", err)
+			return fmt.Errorf("uploading image %d to s3: %v", p.Id, err)
 		}
-		log.Println("Successfully uploaded to", result.Location)
+		fmt.Printf("completed upload to s3 url: %s \n", result.Location)
 		p.S3ImgSrc = result.Location
 	}
 	return
