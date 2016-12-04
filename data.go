@@ -40,6 +40,20 @@ type Photo struct {
 	S3ImgSrc   string
 }
 
+type Photos []Photo
+
+func (slice Photos) Len() int {
+	return len(slice)
+}
+
+func (slice Photos) Less(i, j int) bool {
+	return slice[i].Id < slice[j].Id
+}
+
+func (slice Photos) Swap(i, j int) {
+	slice[i], slice[j] = slice[j], slice[i]
+}
+
 type Camera struct {
 	Name string
 }

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sort"
 )
 
 type Scraper struct {
@@ -13,7 +14,13 @@ type Scraper struct {
 }
 
 func (s Scraper) crawl(name string) error {
+	last, err := checkLastInsert(name)
+	fmt.Println(last)
+	if err != nil {
+		return err
+	}
 	murl := fmt.Sprint("https://api.nasa.gov/mars-photos/api/v1/manifests/", name, "?api_key=", s.APIKey)
+	fmt.Println(murl)
 	res, err := http.Get(murl)
 	if err != nil {
 		return err
@@ -25,13 +32,16 @@ func (s Scraper) crawl(name string) error {
 		if err != nil {
 			return err
 		}
-		for _, sol := range r.Manifest.Photos {
-			purl := fmt.Sprint("https://api.nasa.gov/mars-photos/api/v1/rovers/", name, "/photos?sol=", sol.Sol, "&api_key=", s.APIKey)
+		for i := last.Sol; i < len(r.Manifest.Photos); i++ {
+			purl := fmt.Sprint("https://api.nasa.gov/mars-photos/api/v1/rovers/", name, "/photos?sol=", r.Manifest.Photos[i].Sol, "&api_key=", s.APIKey)
+			fmt.Println(purl)
 			photos, err := parsePhotos(purl)
 			if err != nil {
 				return err
 			}
-			for _, ph := range photos {
+			sort.Sort(photos)
+			for j := last.Id; j < len(photos); j++ {
+				ph := photos[j]
 				ph.Rover = name
 				err := ph.copyToS3(s.AWSRegion, s.S3Bucket)
 				if err != nil {
@@ -47,11 +57,21 @@ func (s Scraper) crawl(name string) error {
 	return nil
 }
 
+// find the last saved photo from this rover
+func checkLastInsert(rover string) (Photo, error) {
+	var p Photo
+	err := db.QueryRow("select id, sol from photos order by id desc limit 1").Scan(&p.Id, &p.Sol)
+	if err != nil {
+		return p, fmt.Errorf("retrieving last photo from rover %s: %v", rover, err)
+	}
+	return p, nil
+}
+
 type photoResponse struct {
 	Photos []Photo
 }
 
-func parsePhotos(url string) ([]Photo, error) {
+func parsePhotos(url string) (Photos, error) {
 	var pr photoResponse
 	res, err := http.Get(url)
 	if err != nil {
