@@ -33,7 +33,7 @@ func init() {
 
 func main() {
 	s := Scraper{APIKey: c.APIKey, AWSRegion: c.AWSRegion, S3Bucket: c.S3Bucket}
-	err := s.crawl("curiosity")
+	err := s.crawl("spirit")
 	if err != nil {
 		log.Fatal(err)
 	}

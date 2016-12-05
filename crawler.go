@@ -33,8 +33,17 @@ func (s Scraper) crawl(name string) error {
 			return err
 		}
 		// make a Sol for most recent photo Sol and get index in manifest sols to find initial loop position
-		d := &Sol{Sol: last.Sol}
-		for i := r.Manifest.Sols.IndexOf(*d); i < len(r.Manifest.Sols); i++ {
+		d := Sol{Sol: last.Sol}
+		i := r.Manifest.Sols.IndexOf(d)
+		// need to advance if nothing has been saved or if all photos have been found
+		count, err := checkTotalSaved(name, d.Sol)
+		if err != nil {
+			return err
+		}
+		if i == -1 || r.Manifest.Sols[i].TotalPhotos == count {
+			i++
+		}
+		for ; i < len(r.Manifest.Sols); i++ {
 			purl := fmt.Sprint("https://api.nasa.gov/mars-photos/api/v1/rovers/", name, "/photos?sol=", r.Manifest.Sols[i].Sol, "&api_key=", s.APIKey)
 			photos, err := getPhotos(purl)
 			if err != nil {
@@ -69,6 +78,17 @@ func checkLastInsert(rover string) (Photo, error) {
 		return p, fmt.Errorf("retrieving last photo from rover %s: %v", rover, err)
 	}
 	return p, nil
+}
+
+func checkTotalSaved(rover string, sol int) (int, error) {
+	var count int
+	err := db.QueryRow("select count(*) from photos where rover=$1", rover).Scan(&count)
+	if err == sql.ErrNoRows {
+		return count, nil
+	} else if err != nil {
+		return count, fmt.Errorf("retrieving count from rover %s for sol %d: %v", rover, sol, err)
+	}
+	return count, nil
 }
 
 type photoResponse struct {
