@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -101,7 +102,7 @@ func (p *Photo) save() (err error) {
 	if err != nil {
 		return fmt.Errorf("saving image %d to db: %v", p.Id, err)
 	} else {
-		fmt.Printf("successfully saved data for image %d \n", p.Id)
+		log.Printf("successfully saved data for image %d \n", p.Id)
 	}
 	return
 }
@@ -122,7 +123,7 @@ func (p *Photo) copyToS3(region string, bucket string) (err error) {
 		if err != nil {
 			return fmt.Errorf("uploading image %d to s3: %v", p.Id, err)
 		}
-		fmt.Printf("completed upload to s3 url: %s \n", result.Location)
+		log.Printf("completed upload to s3 url: %s \n", result.Location)
 		p.S3ImgSrc = result.Location
 	}
 	return

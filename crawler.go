@@ -80,6 +80,7 @@ func checkLastInsert(rover string) (Photo, error) {
 	return p, nil
 }
 
+// check how many photos have been saved for a rover on a given sol
 func checkTotalSaved(rover string, sol int) (int, error) {
 	var count int
 	err := db.QueryRow("select count(*) from photos where rover=$1", rover).Scan(&count)
@@ -95,6 +96,7 @@ type photoResponse struct {
 	Photos Photos
 }
 
+// fetch and parse photos for a given sol
 func getPhotos(url string) (Photos, error) {
 	var pr photoResponse
 	res, err := http.Get(url)

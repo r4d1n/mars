@@ -32,10 +32,13 @@ func init() {
 }
 
 func main() {
+	rovers := []string{"curiosity", "opportunity", "spirit"}
 	s := Scraper{APIKey: c.APIKey, AWSRegion: c.AWSRegion, S3Bucket: c.S3Bucket}
-	err := s.crawl("spirit")
-	if err != nil {
-		log.Fatal(err)
+	for _, name := range rovers {
+		err := s.crawl(name)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 }
 
