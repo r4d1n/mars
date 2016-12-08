@@ -100,6 +100,7 @@ func (p *Photo) save() (err error) {
 	defer stmt.Close()
 	err = stmt.QueryRow(p.Id, p.Sol, p.Rover, p.Camera.Name, p.EarthDate, p.NasaImgSrc, p.S3ImgSrc).Scan(&p.Id)
 	if err != nil {
+		fmt.Println(err)
 		return fmt.Errorf("saving image %d to db: %v", p.Id, err)
 	} else {
 		log.Printf("successfully saved data for image %d \n", p.Id)

@@ -16,6 +16,7 @@ type Scraper struct {
 
 func (s Scraper) crawl(name string) error {
 	last, err := checkLastInsert(name)
+	fmt.Printf("Last saved image: %d of sol: %d \n", last.Id, last.Sol)
 	if err != nil {
 		return err
 	}
@@ -50,9 +51,11 @@ func (s Scraper) crawl(name string) error {
 				return err
 			}
 			index := photos.IndexOf(last)
+			fmt.Printf("last id: %d / last index: %d \n", last.Id, index)
 			// make start looping from initial position determined by last photo saved
 			for j := index + 1; j < len(photos); j++ {
 				ph := photos[j]
+				fmt.Printf("ph id: %d / loop var j: %d \n", ph.Id, j)
 				ph.Rover = name
 				err := ph.copyToS3(s.AWSRegion, s.S3Bucket)
 				if err != nil {
@@ -71,7 +74,7 @@ func (s Scraper) crawl(name string) error {
 // find the last saved photo from this rover
 func checkLastInsert(rover string) (Photo, error) {
 	var p Photo
-	err := db.QueryRow("select id, sol from photos where rover=$1 order by id desc limit 1", rover).Scan(&p.Id, &p.Sol)
+	err := db.QueryRow("select id, sol from photos where rover=$1 order by sol desc, id desc limit 1", rover).Scan(&p.Id, &p.Sol)
 	if err == sql.ErrNoRows {
 		return p, nil
 	} else if err != nil {
