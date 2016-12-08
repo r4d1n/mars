@@ -17,6 +17,8 @@ type config struct {
 	DBPass    string
 	AWSRegion string
 	S3Bucket  string
+	SSLMode   string
+	DBHost    string
 }
 
 var db *sql.DB
@@ -25,7 +27,7 @@ var c config
 func init() {
 	c.load("./config.json")
 	var err error
-	db, err = sql.Open("postgres", fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", c.DBUser, c.DBPass, c.DBName))
+	db, err = sql.Open("postgres", fmt.Sprintf("user=%s password=%s dbname=%s host=%s sslmode=%s", c.DBUser, c.DBPass, c.DBName, c.DBHost, c.SSLMode))
 	if err = db.Ping(); err != nil {
 		log.Fatal(err)
 	}
