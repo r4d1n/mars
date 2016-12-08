@@ -41,7 +41,9 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+		fmt.Printf("Completed rover: %s", name)
 	}
+	fmt.Printf("All rovers complete!")
 }
 
 func (c *config) load(path string) {
