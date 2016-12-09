@@ -37,8 +37,11 @@ func (s Scraper) crawl(name string) error {
 	if err != nil {
 		return err
 	}
+	client := &http.Client{}
 	murl := fmt.Sprint("https://api.nasa.gov/mars-photos/api/v1/manifests/", name, "?api_key=", s.APIKey)
-	res, err := http.Get(murl)
+	req, err := http.NewRequest("GET", murl, nil)
+	req.Header.Add("Content-Type", "application/json")
+	res, err := client.Do(req)
 	if err != nil {
 		return err
 	} else {
@@ -118,7 +121,10 @@ type photoResponse struct {
 // fetch and parse photos for a given sol
 func getPhotos(url string) (data.Photos, error) {
 	var pr photoResponse
-	res, err := http.Get(url)
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", url, nil)
+	req.Header.Add("Content-Type", "application/json")
+	res, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("retrieving url %s: %v", url, err)
 	} else {
