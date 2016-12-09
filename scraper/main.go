@@ -37,15 +37,25 @@ func init() {
 
 func main() {
 	rovers := []string{"curiosity", "opportunity", "spirit"}
+	worklist := make(chan []string)
+	done := make(map[string]bool)
+	// load rover names into worklist channel
+	go func() { worklist <- rovers }()
 	s := Scraper{APIKey: c.APIKey, AWSRegion: c.AWSRegion, S3Bucket: c.S3Bucket}
-	for _, name := range rovers {
-		err := s.crawl(name)
-		if err != nil {
-			log.Fatal(err)
+	for list := range worklist {
+		for _, name := range list {
+			if !done[name] {
+				done[name] = true
+				go func(nm string) {
+					err := s.crawl(nm)
+					if err != nil {
+						log.Fatal(err)
+					}
+					fmt.Printf("Completed rover: %s \n", nm)
+				}(name)
+			}
 		}
-		fmt.Printf("Completed rover: %s", name)
 	}
-	fmt.Printf("All rovers complete!")
 }
 
 func (c *config) load(path string) {

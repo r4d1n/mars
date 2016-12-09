@@ -33,7 +33,7 @@ type Manifest struct {
 
 func (s Scraper) crawl(name string) error {
 	last, err := checkLastInsert(name)
-	fmt.Printf("Last saved image: %d of sol: %d \n", last.Id, last.Sol)
+	fmt.Printf("rover %s: last saved image %d of sol: %d \n", name, last.Id, last.Sol)
 	if err != nil {
 		return err
 	}
@@ -71,8 +71,8 @@ func (s Scraper) crawl(name string) error {
 			// start looping from initial position determined by last photo saved
 			for j := index + 1; j < len(photos); j++ {
 				ph := photos[j]
-				fmt.Printf("ph id: %d / sol: %d \n", ph.Id, ph.Sol)
 				ph.Rover = name
+				fmt.Printf("ph id: %d / sol: %d / rover: %s \n", ph.Id, ph.Sol, ph.Rover)
 				err := ph.CopyToS3(s.AWSRegion, s.S3Bucket)
 				if err != nil {
 					return err
