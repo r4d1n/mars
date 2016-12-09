@@ -37,8 +37,11 @@ func (s Scraper) crawl(name string) error {
 	if err != nil {
 		return err
 	}
+	client := &http.Client{}
 	murl := fmt.Sprint("https://api.nasa.gov/mars-photos/api/v1/manifests/", name, "?api_key=", s.APIKey)
-	res, err := http.Get(murl)
+	req, err := http.NewRequest("GET", murl, nil)
+	req.Header.Add("Content-Type", "application/json")
+	res, err := client.Do(req)
 	if err != nil {
 		return err
 	} else {
@@ -58,28 +61,48 @@ func (s Scraper) crawl(name string) error {
 		if err != nil {
 			return err
 		}
-		if i == -1 || r.Manifest.Sols[i].TotalPhotos == count {
-			i++
+		if i == -1 || r.Manifest.Sols[i].TotalPhotos <= count {
+			i++ // start at 0 or next sol if necessary
 		}
-		for ; i < len(r.Manifest.Sols); i++ {
-			purl := fmt.Sprint("https://api.nasa.gov/mars-photos/api/v1/rovers/", name, "/photos?sol=", r.Manifest.Sols[i].Sol, "&api_key=", s.APIKey)
-			photos, err := getPhotos(purl)
-			if err != nil {
-				return err
-			}
-			index := photos.IndexOf(last)
-			// start looping from initial position determined by last photo saved
-			for j := index + 1; j < len(photos); j++ {
-				ph := photos[j]
-				ph.Rover = name
-				fmt.Printf("ph id: %d / sol: %d / rover: %s \n", ph.Id, ph.Sol, ph.Rover)
-				err := ph.CopyToS3(s.AWSRegion, s.S3Bucket)
-				if err != nil {
-					return err
+		sollist := make(chan data.Sols)
+		photolist := make(chan data.Photos)
+		errorch := make(chan error)                      // for handling errorch in concurrent crawling
+		done := make(map[int]bool)                       // will check Sol.Id
+		go func() { sollist <- r.Manifest.Sols[i+1:] }() // initial position is index of last photo saved + 1
+		for list := range sollist {
+			for _, sol := range list {
+				fmt.Println("!!!!!!! ranging over list", sol.Sol)
+				if !done[sol.Sol] {
+					done[sol.Sol] = true
+					purl := fmt.Sprint("https://api.nasa.gov/mars-photos/api/v1/rovers/", name, "/photos?sol=", sol.Sol, "&api_key=", s.APIKey)
+					go func(uri string) {
+						var photos data.Photos
+						photos, err = getPhotos(uri)
+						sort.Sort(photos)
+						if err != nil {
+							fmt.Println("error blockS")
+							errorch <- err
+						}
+						photolist <- photos
+					}(purl)
+					for phos := range photolist {
+						for _, ph := range phos {
+							ph.Rover = name
+							fmt.Printf("ph id: %d / sol: %d / rover: %s \n", ph.Id, ph.Sol, ph.Rover)
+							// err := ph.CopyToS3(s.AWSRegion, s.S3Bucket)
+							if err != nil {
+								errorch <- err
+							}
+							// err = ph.Save()
+							if err != nil {
+								errorch <- err
+							}
+						}
+					}
 				}
-				err = ph.Save()
-				if err != nil {
-					return err
+				e := <-errorch
+				if e != nil {
+					return e
 				}
 			}
 		}
@@ -117,8 +140,12 @@ type photoResponse struct {
 
 // fetch and parse photos for a given sol
 func getPhotos(url string) (data.Photos, error) {
+	fmt.Println("fetching url:", url)
 	var pr photoResponse
-	res, err := http.Get(url)
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", url, nil)
+	req.Header.Add("Content-Type", "application/json")
+	res, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("retrieving url %s: %v", url, err)
 	} else {
