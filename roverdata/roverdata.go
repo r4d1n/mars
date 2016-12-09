@@ -1,7 +1,12 @@
-package main
+/*
+Package roverdata implements data structures for use with the nasa mars rover photo api
+*/
+
+package roverdata
 
 import (
 	"bufio"
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -11,26 +16,15 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
 
-type manifestResponse struct {
-	Manifest Manifest `json:"photo_manifest"`
-}
+var DB *sql.DB
 
-type Manifest struct {
-	Name        string
-	LandingDate string `json:"landing_date"`
-	LaunchDate  string `json:"launch_date"`
-	Status      string
-	MaxSol      int    `json:"max_sol"`
-	MaxDate     string `json:"max_date"`
-	TotalPhotos int    `json:"total_photos"`
-	Sols        Sols   `json:"photos"`
-}
-
+// the photos are organized by martian Sol
 type Sol struct {
 	Sol         int
 	TotalPhotos int `json:"total_photos"`
 }
 
+// Sols implements the sort.Sort interface
 type Sols []*Sol
 
 func (slice Sols) Len() int {
@@ -54,6 +48,7 @@ func (c Sols) IndexOf(s Sol) int {
 	return -1
 }
 
+// Photo represents a single image and associated metadata
 type Photo struct {
 	Id         int
 	Sol        int
@@ -64,6 +59,7 @@ type Photo struct {
 	S3ImgSrc   string
 }
 
+// Photos implements the sort.Sort interface
 type Photos []*Photo
 
 func (slice Photos) Len() int {
@@ -87,13 +83,14 @@ func (c Photos) IndexOf(p Photo) int {
 	return -1
 }
 
+// Each photo was taken by an associated Camera
 type Camera struct {
 	Name string
 }
 
-func (p *Photo) save() (err error) {
+func (p *Photo) Save() (err error) {
 	statement := "INSERT INTO photos (id, sol, rover, camera, earthdate, nasaimgsrc, s3imgsrc) VALUES($1, $2, $3, $4, $5, $6, $7) returning id"
-	stmt, err := db.Prepare(statement)
+	stmt, err := DB.Prepare(statement)
 	if err != nil {
 		return fmt.Errorf("saving image %d to db: %v", p.Id, err)
 	}
@@ -108,7 +105,7 @@ func (p *Photo) save() (err error) {
 	return
 }
 
-func (p *Photo) copyToS3(region string, bucket string) (err error) {
+func (p *Photo) CopyToS3(region string, bucket string) (err error) {
 	res, err := http.Get(p.NasaImgSrc)
 	if err != nil {
 		return fmt.Errorf("retrieving image %d from nasa: %v", p.Id, err)

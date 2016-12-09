@@ -6,12 +6,29 @@ import (
 	"fmt"
 	"net/http"
 	"sort"
+
+	data "github.com/r4d1n/nasa-mars-photos/roverdata"
 )
 
 type Scraper struct {
 	APIKey    string
 	AWSRegion string
 	S3Bucket  string
+}
+
+type manifestResponse struct {
+	Manifest Manifest `json:"photo_manifest"`
+}
+
+type Manifest struct {
+	Name        string
+	LandingDate string `json:"landing_date"`
+	LaunchDate  string `json:"launch_date"`
+	Status      string
+	MaxSol      int       `json:"max_sol"`
+	MaxDate     string    `json:"max_date"`
+	TotalPhotos int       `json:"total_photos"`
+	Sols        data.Sols `json:"photos"`
 }
 
 func (s Scraper) crawl(name string) error {
@@ -34,7 +51,7 @@ func (s Scraper) crawl(name string) error {
 			return err
 		}
 		// make a Sol for most recent photo Sol and get index in manifest sols to find initial loop position
-		d := Sol{Sol: last.Sol}
+		d := data.Sol{Sol: last.Sol}
 		i := r.Manifest.Sols.IndexOf(d)
 		// need to advance if nothing has been saved or if all photos have been found
 		count, err := checkTotalSaved(name, d.Sol)
@@ -51,17 +68,16 @@ func (s Scraper) crawl(name string) error {
 				return err
 			}
 			index := photos.IndexOf(last)
-			fmt.Printf("last id: %d / last index: %d \n", last.Id, index)
-			// make start looping from initial position determined by last photo saved
+			// start looping from initial position determined by last photo saved
 			for j := index + 1; j < len(photos); j++ {
 				ph := photos[j]
-				fmt.Printf("ph id: %d / loop var j: %d \n", ph.Id, j)
+				fmt.Printf("ph id: %d / sol: %d \n", ph.Id, ph.Sol)
 				ph.Rover = name
-				err := ph.copyToS3(s.AWSRegion, s.S3Bucket)
+				err := ph.CopyToS3(s.AWSRegion, s.S3Bucket)
 				if err != nil {
 					return err
 				}
-				err = ph.save()
+				err = ph.Save()
 				if err != nil {
 					return err
 				}
@@ -72,8 +88,8 @@ func (s Scraper) crawl(name string) error {
 }
 
 // find the last saved photo from this rover
-func checkLastInsert(rover string) (Photo, error) {
-	var p Photo
+func checkLastInsert(rover string) (data.Photo, error) {
+	var p data.Photo
 	err := db.QueryRow("select id, sol from photos where rover=$1 order by sol desc, id desc limit 1", rover).Scan(&p.Id, &p.Sol)
 	if err == sql.ErrNoRows {
 		return p, nil
@@ -96,11 +112,11 @@ func checkTotalSaved(rover string, sol int) (int, error) {
 }
 
 type photoResponse struct {
-	Photos Photos
+	Photos data.Photos
 }
 
 // fetch and parse photos for a given sol
-func getPhotos(url string) (Photos, error) {
+func getPhotos(url string) (data.Photos, error) {
 	var pr photoResponse
 	res, err := http.Get(url)
 	if err != nil {
