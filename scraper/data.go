@@ -1,12 +1,11 @@
 /*
-Package roverdata implements data structures for use with the nasa mars rover photo api
+Data structures for scraping the nasa mars rover photo api
 */
 
-package roverdata
+package main
 
 import (
 	"bufio"
-	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -15,8 +14,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
-
-var DB *sql.DB
 
 // the photos are organized by martian Sol
 type Sol struct {
@@ -90,7 +87,7 @@ type Camera struct {
 
 func (p *Photo) Save() (err error) {
 	statement := "INSERT INTO photos (id, sol, rover, camera, earthdate, nasaimgsrc, s3imgsrc) VALUES($1, $2, $3, $4, $5, $6, $7) returning id"
-	stmt, err := DB.Prepare(statement)
+	stmt, err := db.Prepare(statement)
 	if err != nil {
 		return fmt.Errorf("saving image %d to db: %v", p.Id, err)
 	}

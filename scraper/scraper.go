@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"sort"
-
-	data "github.com/r4d1n/nasa-mars-photos/roverdata"
 )
 
 type Scraper struct {
@@ -25,10 +23,10 @@ type Manifest struct {
 	LandingDate string `json:"landing_date"`
 	LaunchDate  string `json:"launch_date"`
 	Status      string
-	MaxSol      int       `json:"max_sol"`
-	MaxDate     string    `json:"max_date"`
-	TotalPhotos int       `json:"total_photos"`
-	Sols        data.Sols `json:"photos"`
+	MaxSol      int    `json:"max_sol"`
+	MaxDate     string `json:"max_date"`
+	TotalPhotos int    `json:"total_photos"`
+	Sols        Sols   `json:"photos"`
 }
 
 func (s Scraper) crawl(name string) error {
@@ -54,7 +52,7 @@ func (s Scraper) crawl(name string) error {
 			return err
 		}
 		// make a Sol for most recent photo Sol and get index in manifest sols to find initial loop position
-		d := data.Sol{Sol: last.Sol}
+		d := Sol{Sol: last.Sol}
 		i := r.Manifest.Sols.IndexOf(d)
 		// need to advance if nothing has been saved or if all photos have been found
 		count, err := checkTotalSaved(name, d.Sol)
@@ -91,8 +89,8 @@ func (s Scraper) crawl(name string) error {
 }
 
 // find the last saved photo from this rover
-func checkLastInsert(rover string) (data.Photo, error) {
-	var p data.Photo
+func checkLastInsert(rover string) (Photo, error) {
+	var p Photo
 	err := db.QueryRow("select id, sol from photos where rover=$1 order by sol desc, id desc limit 1", rover).Scan(&p.Id, &p.Sol)
 	if err == sql.ErrNoRows {
 		return p, nil
@@ -115,11 +113,11 @@ func checkTotalSaved(rover string, sol int) (int, error) {
 }
 
 type photoResponse struct {
-	Photos data.Photos
+	Photos Photos
 }
 
 // fetch and parse photos for a given sol
-func getPhotos(url string) (data.Photos, error) {
+func getPhotos(url string) (Photos, error) {
 	var pr photoResponse
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)

@@ -8,7 +8,6 @@ import (
 	"log"
 
 	_ "github.com/lib/pq"
-	data "github.com/r4d1n/nasa-mars-photos/roverdata"
 )
 
 type config struct {
@@ -29,7 +28,6 @@ func init() {
 	c.load("./config.json")
 	var err error
 	db, err = sql.Open("postgres", fmt.Sprintf("user=%s password=%s dbname=%s host=%s sslmode=%s", c.DBUser, c.DBPass, c.DBName, c.DBHost, c.SSLMode))
-	data.DB = db
 	if err = db.Ping(); err != nil {
 		log.Fatal(err)
 	}
