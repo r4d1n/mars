@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
+	"sync"
 
 	_ "github.com/lib/pq"
 )
@@ -34,6 +36,7 @@ func init() {
 }
 
 func main() {
+	var wg sync.WaitGroup
 	rovers := []string{"curiosity", "opportunity", "spirit"}
 	worklist := make(chan []string)
 	done := make(map[string]bool)
@@ -44,15 +47,20 @@ func main() {
 		for _, name := range list {
 			if !done[name] {
 				done[name] = true
+				wg.Add(1)
 				go func(nm string) {
+					defer wg.Done()
 					err := s.crawl(nm)
 					if err != nil {
 						log.Fatal(err)
 					}
 					fmt.Printf("Completed rover: %s \n", nm)
+					return
 				}(name)
 			}
 		}
+		wg.Wait()
+		os.Exit(0)
 	}
 }
 
