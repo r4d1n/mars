@@ -1,5 +1,3 @@
-drop table if exists photos;
-
 create table photos (
   id int primary key,
   sol int,
