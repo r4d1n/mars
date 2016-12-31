@@ -1,0 +1,24 @@
+body {
+  color: red;
+}
+
+div.wrapper-main {
+  margin: 5em;
+}
+
+div.wrapper-item {
+  max-width: 1000px;
+  margin: 0 auto;
+  width: 80%;
+}
+
+img.photo {
+
+}
+
+div.placeholder {
+  margin: 2em auto;
+  background-color: #666;
+  height: 500px;
+  width: 500px;
+}

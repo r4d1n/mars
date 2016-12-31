@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
@@ -35,42 +34,6 @@ func main() {
 	}
 	fmt.Println("serving on port 3000")
 	log.Fatal(server.ListenAndServe())
-}
-
-type Photo struct {
-	Id        int    `json:"id"`
-	Sol       int    `json:"sol"`
-	Rover     string `json:"rover"`
-	Camera    string `json:"camera"`
-	EarthDate string `json:"earth_date"`
-	S3ImgSrc  string `json:"img_src"`
-}
-
-func getRoverPhotos(w http.ResponseWriter, r *http.Request) {
-	var photos []Photo
-	rover := mux.Vars(r)["rover"]
-	page, err := strconv.Atoi(mux.Vars(r)["page"])
-	page = page * 10
-	limit := 10
-	rows, err := db.Query("SELECT id, sol, rover, camera, earthdate, s3imgsrc FROM photos WHERE rover=$1 order by sol desc limit $2 offset $3", rover, limit, page)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer rows.Close()
-	for rows.Next() {
-		var p Photo
-		err := rows.Scan(&p.Id, &p.Sol, &p.Rover, &p.Camera, &p.EarthDate, &p.S3ImgSrc)
-		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Printf("%d, %s, %d, %s, %s\n", p.Id, p.Rover, p.Sol, p.Camera, p.S3ImgSrc)
-		photos = append(photos, p)
-	}
-	j, err := json.Marshal(photos)
-	if err != nil {
-		log.Fatal(err)
-	}
-	w.Write(j)
 }
 
 type config struct {
