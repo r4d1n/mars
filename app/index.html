@@ -1,19 +1,22 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta http-equiv="Content-Type" content="text/html"; charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html"; charset="utf-8" />
   <title>Pictures from Space</title>
-  <link rel="stylesheet" type="text/css" href="static/reset.css">
-  <link rel="stylesheet" type="text/css" href="static/styles.css">
+  <link rel="stylesheet" type="text/css" href="static/reset.css" />
+  <link rel="stylesheet" type="text/css" href="static/styles.css" />
 </head>
 <body>
   <div class="wrapper-main">
     {{ range . }}
     <div class="wrapper-item">
       <div class="placeholder"></div>
-      <img class="photo" data-src={{.}}></img>
+      <img src="" class="photo" data-src={{.}}></img>
     </div>
     {{ end }}
   </div>
+
+  <script src="static/util.js"></script>
+  <script src="static/javascript.js"></script>
 </body>
 </html>

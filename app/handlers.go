@@ -20,6 +20,7 @@ func serveIndex(w http.ResponseWriter, r *http.Request) {
 		"hello/world",
 		"hello/world",
 	}
+	fmt.Println(data)
 	t.Execute(w, data)
 }
 

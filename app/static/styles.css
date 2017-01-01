@@ -13,7 +13,8 @@ div.wrapper-item {
 }
 
 img.photo {
-
+  max-height: 500px;
+  width: auto;
 }
 
 div.placeholder {
@@ -21,4 +22,8 @@ div.placeholder {
   background-color: #666;
   height: 500px;
   width: 500px;
+}
+
+.hidden {
+  display: none;
 }
