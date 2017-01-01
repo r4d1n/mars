@@ -13,14 +13,22 @@ import (
 
 func serveIndex(w http.ResponseWriter, r *http.Request) {
 	t, _ := template.ParseFiles("index.html")
-	data := [5]string{
-		"hello/world",
-		"hello/world",
-		"hello/world",
-		"hello/world",
-		"hello/world",
+	rover := "curiosity"
+	limit := 10
+	rows, err := db.Query("SELECT id, sol, rover, camera, earthdate, s3imgsrc FROM photos WHERE rover=$1 order by sol desc limit $2 offset $3", rover, limit, 10)
+	var data []photo
+	if err != nil {
+		log.Fatal(err)
 	}
-	fmt.Println(data)
+	defer rows.Close()
+	for rows.Next() {
+		var p photo
+		err = rows.Scan(&p.Id, &p.Sol, &p.Rover, &p.Camera, &p.EarthDate, &p.S3ImgSrc)
+		if err != nil {
+			log.Fatal(err)
+		}
+		data = append(data, p)
+	}
 	t.Execute(w, data)
 }
 

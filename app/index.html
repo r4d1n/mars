@@ -10,8 +10,19 @@
   <div class="wrapper-main">
     {{ range . }}
     <div class="wrapper-item">
-      <div class="placeholder"></div>
-      <img src="" class="photo" data-src={{.}}></img>
+      <div class="metadata">
+        <ul>
+          <li>{{.Id}}</li>
+          <li>{{.Sol}}</li>
+          <li>{{.EarthDate}}</li>
+          <li>{{.Rover}}</li>
+          <li>{{.Camera}}</li>
+        </ul>
+      </div>
+      <!-- <div class="placeholder"></div> -->
+      <div class="img-container">
+        <img src="" class="photo" data-src={{.S3ImgSrc}}></img>
+      </div>
     </div>
     {{ end }}
   </div>

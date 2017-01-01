@@ -1,6 +1,6 @@
 "use strict";
 
-const UTIL = (function() {
+const Util = (function() {
   /**
   * A helper for doing async tasks with generators
   * @param {function} generatorFn - a generator function to run asynchronously
@@ -18,7 +18,7 @@ const UTIL = (function() {
 
   function handleResult(next){
     if (next.done) {
-      return next.value;
+      return next.value
     } else {
       return Promise.resolve(next.value)
       // pass current value back to the generator and recurse with what comes back
