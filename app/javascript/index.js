@@ -1,18 +1,19 @@
 "use strict";
 
+require("../styles/index.scss")
+
+import "babel-polyfill"
+
 document.addEventListener("DOMContentLoaded", function() {
   // cache some dom elements
   let wrappers = document.querySelectorAll("div.wrapper-item")
   let photos = document.querySelectorAll("img.photo")
-
   // set up some globals
   const routeFn = (rover, page) => `/rover/${rover}/page/${page}`
   let page = 1
   let rover = "curiosity"
 
-  console.log("dom content loaded")
-
-  (function init(){
+  ;(function init() {
     photos = doLazyLoad(photos)
     let route = routeFn(rover, page)
     console.log("initialize", page, rover, route)
@@ -24,6 +25,7 @@ document.addEventListener("DOMContentLoaded", function() {
   * @param {nodelist} imgNodes - an array-like list of <img> DOM nodes in the initial index.html
   */
   function doLazyLoad(imgNodes) {
+    console.log("in lazy load", imgNodes);
     return Array.prototype.map.call(imgNodes, (el) => el.src = el.dataset.src)
   }
 
@@ -49,5 +51,4 @@ document.addEventListener("DOMContentLoaded", function() {
       console.error(err)
     }
   }
-
 })
