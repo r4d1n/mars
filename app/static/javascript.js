@@ -8,6 +8,7 @@ State.page = 1
 State.rover = 0
 State.tick = false
 State.visible = 0
+State.lastY = undefined
 
 document.addEventListener('DOMContentLoaded', function() {
   // cache some dom elements
@@ -21,15 +22,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // event handler where the magic happens
   let scrollHandler = (e) => {
-    if (e.deltaY < 0 && State.visible === 0) return // don't do anything if someone scrolls up right away
+    let up
+    // for wheel events
+    if (e.deltaY && e.deltaY < 0) up = true
+    if (e.deltaY && e.deltaY > 0) up = false
+    // for touch events
+    if (e.type === 'touchmove') {
+      if (State.lastY && State.lastY > e.touches[0].clientY) up = true
+      if (State.lastY && State.lastY < e.touches[0].clientY) up = false
+      State.lastY = e.touches[0].clientY
+    }
+    console.log(State.lastY, up);
+    if (up && State.visible === 0) return // don't do anything if someone scrolls up right away
     if (!State.tick) {
       window.requestAnimationFrame(function() {
         // manage visible image state
         // first hide the current image
         State.nodes[State.visible].classList.add('hidden')
         // then figure out which one should be shown next
-        if (e.deltaY > 0) State.visible++
-        if (e.deltaY < 0) State.visible--
+        if (!up) State.visible++
+        if (up) State.visible--
         if (State.visible >= State.nodes.length) State.visible = State.nodes.length - 1
         if (State.visible < 0) State.visible = 0
         // now show the correct visible image
@@ -63,10 +75,10 @@ function* update(uri) {
     console.log('json', list)
     if (!list || list.length < 10) {
       State.rover++
-      State.page = 0
       if (State.rover > ROVERS.length) {
-        alert("No More Photos")
+        State.rover = 0
       }
+      State.page = 0
       return
     }
     for (let item of list) {

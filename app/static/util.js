@@ -42,7 +42,6 @@ const Util = (function() {
   *
   * @return {Function}
   */
-
   function html(literalSections, ...substs) {
     // Use raw literal sections: we don’t want
     // backslashes (\n etc.) to be interpreted

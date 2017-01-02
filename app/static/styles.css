@@ -11,7 +11,8 @@ body {
 /* main layout */
 
 div.wrapper-main {
-  margin: 5em;
+  margin: 5em 0;
+  overflow: hidden;
 }
 
 div.wrapper-item {
