@@ -9,25 +9,15 @@ document.addEventListener("DOMContentLoaded", function() {
   let wrappers = document.querySelectorAll("div.wrapper-item")
   let photos = document.querySelectorAll("img.photo")
   // set up some globals
-  const routeFn = (rover, page) => `/rover/${rover}/page/${page}`
   let page = 1
   let rover = "curiosity"
 
   ;(function init() {
-    photos = doLazyLoad(photos)
-    let route = routeFn(rover, page)
+    photos = util.lazyLoad(photos)
+    let route = util.makeRoute(rover, page)
     console.log("initialize", page, rover, route)
-    // Util.runGenerator(updateImages, route)
+    // Util.generator(updateImages, route)
   })()
-
-  /**
-  * Lazy load initial images in rendered markup
-  * @param {nodelist} imgNodes - an array-like list of <img> DOM nodes in the initial index.html
-  */
-  function doLazyLoad(imgNodes) {
-    console.log("in lazy load", imgNodes);
-    return Array.prototype.map.call(imgNodes, (el) => el.src = el.dataset.src)
-  }
 
   /**
   * Fetch images and metadata and append to the DOM

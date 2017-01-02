@@ -31,6 +31,25 @@ function handleResult(next){
   }
 }
 
+/**
+* Lazy load initial images in rendered markup
+* @param {nodelist} imgNodes - an array-like list of <img> DOM nodes in the initial index.html
+*/
+function doLazyLoad(imgNodes) {
+  console.log("in lazy load", imgNodes);
+  return Array.prototype.map.call(imgNodes, (el) => el.src = el.dataset.src)
+}
+
+/**
+* Conveniently build a new route to the rover data api
+* @param {string} rover - the name of the rover to fetch data for
+* @param {string} page - the page to fetch data from
+*/
+function makeRoute = (rover, page) => `/rover/${rover}/page/${page}`
+
+
 module.exports =  {
-  runGenerator: run
+  generator: run,
+  lazyLoad: doLazyLoad,
+  makeRoute: makeRoute
 }
