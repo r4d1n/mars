@@ -9,7 +9,7 @@
 <body>
   <div class="wrapper-main">
     {{ range . }}
-    <div class="wrapper-item">
+    <div class="wrapper-item hidden" data-id="{{.Id}}">
       <div class="metadata">
         <ul>
           <li>{{.Id}}</li>

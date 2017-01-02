@@ -3,7 +3,7 @@
 const Util = (function() {
   /**
   * A helper for doing async tasks with generators
-  * @param {function} generatorFn - a generator function to run asynchronously
+  * @param {Function} generatorFn - a generator function to run asynchronously
   * Additional arguments are passed to the generator
   */
   let iterator
@@ -32,8 +32,60 @@ const Util = (function() {
     }
   }
 
+  /**
+  * Lazy load initial images in rendered markup
+  * @param {Object} img - an array-like list of <img> DOM nodes in the initial index.html
+  */
+  function lazyLoad(img) {
+    img.src = img.dataset.src
+    return img
+  }
+
+  /**
+  * Convenience function for building the api route
+  * @param {String} rover - the rover whose data we want
+  * @param {String} page - the page of data we want
+  */
+  function makeRoute (rover, page) {
+    return `/rover/${rover}/page/${page}`
+  }
+
+  /**
+  * Debounce
+  *
+  * @param  {Function} fn the function to call
+  * @param  {Number} wait - time between function calls
+  * @param  {Boolean} immediate - trigger before the wait instead of after
+  *
+  * @return {Function}
+  */
+  function debounce(fn, wait, immediate) {
+    let timeout = null
+
+    return function () {
+      let self = this
+      let args = arguments
+
+      clearTimeout(timeout)
+
+      timeout = setTimeout(function () {
+        timeout = null
+        if (!immediate) {
+          fn.apply(self, args)
+        }
+      }, wait)
+
+      if (immediate && !timeout) {
+        fn.apply(self, args)
+      }
+    };
+  }
+
   // public API
   return {
-    runGenerator: run
+    generator: run,
+    lazyLoad: lazyLoad,
+    makeRoute: makeRoute,
+    debounce: debounce
   }
 })()
