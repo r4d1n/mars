@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 const Util = (function() {
   /**
@@ -33,59 +33,55 @@ const Util = (function() {
   }
 
   /**
-  * Lazy load initial images in rendered markup
-  * @param {Object} img - an array-like list of <img> DOM nodes in the initial index.html
-  */
-  function lazyLoad(img) {
-    img.src = img.dataset.src
-    return img
-  }
-
-  /**
-  * Convenience function for building the api route
-  * @param {String} rover - the rover whose data we want
-  * @param {String} page - the page of data we want
-  */
-  function makeRoute (rover, page) {
-    return `/rover/${rover}/page/${page}`
-  }
-
-  /**
-  * Debounce
+  * HTML Templating
   *
-  * @param  {Function} fn the function to call
-  * @param  {Number} wait - time between function calls
-  * @param  {Boolean} immediate - trigger before the wait instead of after
+  * A quick and dirty ES6 solution via http://www.2ality.com/2015/01/template-strings-html.html
+  *
+  * @param  {Function} literalSections - ES6 template literal strings for the template
+  * @param  {Array} wait - time between function calls
   *
   * @return {Function}
   */
-  function debounce(fn, wait, immediate) {
-    let timeout = null
 
-    return function () {
-      let self = this
-      let args = arguments
+  function html(literalSections, ...substs) {
+    // Use raw literal sections: we don’t want
+    // backslashes (\n etc.) to be interpreted
+    let raw = literalSections.raw
 
-      clearTimeout(timeout)
+    let result = ''
 
-      timeout = setTimeout(function () {
-        timeout = null
-        if (!immediate) {
-          fn.apply(self, args)
-        }
-      }, wait)
+    substs.forEach((subst, i) => {
+      // Retrieve the literal section preceding
+      // the current substitution
+      let lit = raw[i]
 
-      if (immediate && !timeout) {
-        fn.apply(self, args)
+      // In the example, map() returns an array:
+      // If substitution is an array (and not a string),
+      // we turn it into a string
+      if (Array.isArray(subst)) {
+        subst = subst.join('')
       }
-    };
+
+      // If the substitution is preceded by a dollar sign,
+      // we escape special characters in it
+      if (lit.endsWith('$')) {
+        subst = htmlEscape(subst)
+        lit = lit.slice(0, -1)
+      }
+      result += lit
+      result += subst
+    })
+    // Take care of last literal section
+    // (Never fails, because an empty template string
+    // produces one literal section, an empty string)
+    result += raw[raw.length-1] // (A)
+
+    return result
   }
 
   // public API
   return {
     generator: run,
-    lazyLoad: lazyLoad,
-    makeRoute: makeRoute,
-    debounce: debounce
+    template: html
   }
 })()

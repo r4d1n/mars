@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -13,7 +12,7 @@ import (
 
 func serveIndex(w http.ResponseWriter, r *http.Request) {
 	t, _ := template.ParseFiles("index.html")
-	rover := "curiosity"
+	rover := "spirit"
 	limit := 10
 	rows, err := db.Query("SELECT id, sol, rover, camera, earthdate, s3imgsrc FROM photos WHERE rover=$1 order by sol desc limit $2 offset $3", rover, limit, 10)
 	var data []photo
@@ -38,7 +37,7 @@ func getRoverPhotos(w http.ResponseWriter, r *http.Request) {
 	page, err := strconv.Atoi(mux.Vars(r)["page"])
 	limit := 10
 	page = page * limit
-	rows, err := db.Query("SELECT id, sol, rover, camera, earthdate, s3imgsrc FROM photos WHERE rover=$1 order by sol desc limit $2 offset $3", rover, limit, page)
+	rows, err := db.Query("SELECT id, sol, rover, camera, earthdate, s3imgsrc FROM photos WHERE rover=$1 limit $2 offset $3", rover, limit, page)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -49,7 +48,6 @@ func getRoverPhotos(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Printf("%d, %s, %d, %s, %s\n", p.Id, p.Rover, p.Sol, p.Camera, p.S3ImgSrc)
 		photos = append(photos, p)
 	}
 	j, err := json.Marshal(photos)

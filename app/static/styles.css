@@ -31,6 +31,7 @@ div.img-container {
 
 img.photo {
   width: 500px;
+  max-height: 500px;
 }
 
 .metadata {
