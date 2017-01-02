@@ -32,13 +32,13 @@ func main() {
 	r.HandleFunc("/rover/{rover}/page/{page}", getRoverPhotos)
 	r.HandleFunc("/", serveIndex)
 	server := &http.Server{
-		Addr:         "127.0.0.1:3000",
+		Addr:         ":8080",
 		Handler:      r,
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
 
-	fmt.Println("serving on port 3000")
+	fmt.Println("serving on port 8080")
 	log.Fatal(server.ListenAndServe())
 }
 
