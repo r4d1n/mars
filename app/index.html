@@ -10,17 +10,17 @@
   <div class="wrapper-main">
     {{ range . }}
     <div class="wrapper-item hidden" data-id="{{.Id}}">
-      <div class="metadata">
-        <ul>
-          <li>{{.Id}}</li>
-          <li>{{.Sol}}</li>
-          <li>{{.EarthDate}}</li>
-          <li>{{.Rover}}</li>
-          <li>{{.Camera}}</li>
-        </ul>
-      </div>
       <div class="img-container">
         <img src="" class="photo" data-src={{.S3ImgSrc}}></img>
+      </div>
+      <div class="metadata">
+        <ul>
+          <li>image id: {{.Id}}</li>
+          <li>martian sol: {{.Sol}}</li>
+          <li>earth date: {{.EarthDate}}</li>
+          <li>rover: {{.Rover}}</li>
+          <li>camera: {{.Camera}}</li>
+        </ul>
       </div>
     </div>
     {{ end }}

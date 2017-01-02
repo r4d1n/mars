@@ -32,7 +32,6 @@ document.addEventListener('DOMContentLoaded', function() {
       if (State.lastY && State.lastY < e.touches[0].clientY) up = false
       State.lastY = e.touches[0].clientY
     }
-    console.log(State.lastY, up);
     if (up && State.visible === 0) return // don't do anything if someone scrolls up right away
     if (!State.tick) {
       window.requestAnimationFrame(function() {
@@ -72,7 +71,6 @@ function* update(uri) {
   try {
     let res = yield fetch(uri) // returns a promise for the response
     let list = yield res.json() // returns a promise for json
-    console.log('json', list)
     if (!list || list.length < 10) {
       State.rover++
       if (State.rover > ROVERS.length) {
@@ -102,17 +100,17 @@ function mkNode(data) {
   let div = document.createElement('div')
   div.classList.add('wrapper-item', 'hidden')
   const template = p => Util.template`
-  <div class="metadata">
-    <ul>
-      <li>${p.id}</li>
-      <li>${p.sol}</li>
-      <li>${p.earth_date}</li>
-      <li>${p.rover}</li>
-      <li>${p.camera}</li>
-    </ul>
-  </div>
   <div class="img-container">
     <img src="${p.img_src}" class="photo"></img>
+  </div>
+  <div class="metadata">
+    <ul>
+      <li>image id: ${p.id}</li>
+      <li>martian sol: ${p.sol}</li>
+      <li>earth date: ${p.earth_date}</li>
+      <li>rover: ${p.rover}</li>
+      <li>camera: ${p.camera}</li>
+    </ul>
   </div>
   `
   div.innerHTML = template(data)

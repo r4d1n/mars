@@ -14,7 +14,7 @@ func serveIndex(w http.ResponseWriter, r *http.Request) {
 	t, _ := template.ParseFiles("index.html")
 	rover := "spirit"
 	limit := 10
-	rows, err := db.Query("SELECT id, sol, rover, camera, earthdate, s3imgsrc FROM photos WHERE rover=$1 order by sol desc limit $2 offset $3", rover, limit, 10)
+	rows, err := db.Query("SELECT id, sol, rover, camera, earthdate, s3imgsrc FROM photos WHERE rover=$1 order by sol desc, id desc limit $2", rover, limit)
 	var data []photo
 	if err != nil {
 		log.Fatal(err)
@@ -37,7 +37,7 @@ func getRoverPhotos(w http.ResponseWriter, r *http.Request) {
 	page, err := strconv.Atoi(mux.Vars(r)["page"])
 	limit := 10
 	page = page * limit
-	rows, err := db.Query("SELECT id, sol, rover, camera, earthdate, s3imgsrc FROM photos WHERE rover=$1 limit $2 offset $3", rover, limit, page)
+	rows, err := db.Query("SELECT id, sol, rover, camera, earthdate, s3imgsrc FROM photos WHERE rover=$1 order by sol desc, id desc limit $2 offset $3", rover, limit, page)
 	if err != nil {
 		log.Fatal(err)
 	}
