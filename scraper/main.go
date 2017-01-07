@@ -2,9 +2,7 @@ package main
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"sync"
@@ -12,24 +10,11 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type config struct {
-	APIKey    string
-	DBName    string
-	DBUser    string
-	DBPass    string
-	AWSRegion string
-	S3Bucket  string
-	SSLMode   string
-	DBHost    string
-}
-
 var db *sql.DB
-var c config
 
 func init() {
-	c.load("./config.json")
 	var err error
-	db, err = sql.Open("postgres", fmt.Sprintf("user=%s password=%s dbname=%s host=%s sslmode=%s", c.DBUser, c.DBPass, c.DBName, c.DBHost, c.SSLMode))
+	db, err = sql.Open("postgres", fmt.Sprintf("user=%s password=%s dbname=%s host=%s sslmode=%s", os.Getenv("NASA_DB_USER"), os.Getenv("NASA_DB_PASS"), os.Getenv("NASA_DB_NAME"), os.Getenv("NASA_DB_HOST"), os.Getenv("NASA_DB_SSL")))
 	if err = db.Ping(); err != nil {
 		log.Fatal(err)
 	}
@@ -42,7 +27,7 @@ func main() {
 	done := make(map[string]bool)
 	// load rover names into worklist channel
 	go func() { worklist <- rovers }()
-	s := Scraper{APIKey: c.APIKey, AWSRegion: c.AWSRegion, S3Bucket: c.S3Bucket}
+	s := Scraper{APIKey: os.Getenv("NASA_API_KEY"), AWSRegion: os.Getenv("NASA_AWS_REGION"), S3Bucket: os.Getenv("NASA_S3_BUCKET")}
 	for list := range worklist {
 		for _, name := range list {
 			if !done[name] {
@@ -61,16 +46,5 @@ func main() {
 		}
 		wg.Wait()
 		os.Exit(0)
-	}
-}
-
-func (c *config) load(path string) {
-	file, err := ioutil.ReadFile(path)
-	if err != nil {
-		log.Fatal("missing config file: ", err)
-	}
-	err = json.Unmarshal(file, &c)
-	if err != nil {
-		log.Fatal("could not parse config file: ", err)
 	}
 }
