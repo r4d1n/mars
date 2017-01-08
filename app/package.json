@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "pictures from mars via nasa",
   "scripts": {
-    "build": "webpack"
+    "build": "go build && webpack"
   },
   "devDependencies": {
     "babel-core": "^6.21.0",

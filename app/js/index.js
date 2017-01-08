@@ -2,29 +2,12 @@ import 'babel-polyfill'
 import 'whatwg-fetch'
 import { doGenerator, template } from './util'
 
-const ROVERS = ['spirit', 'curiosity', 'opportunity']
+const ROVERS = ['curiosity', 'spirit', 'opportunity']
 
 // an object for app state
 let State = {}
-State.page = 1
-State.rover = 0
-State.tick = false
-State.visible = 0
-State.lastX = undefined
-State.btnHold = false
 
 document.addEventListener('DOMContentLoaded', function() {
-  // cache some dom elements
-  State.main = document.querySelector('div.wrapper-main')
-  State.nodes = Array.from(document.querySelectorAll('div.wrapper-item'))
-  // load in the images
-  let photos = Array.from(document.querySelectorAll('img.photo'), (img) => lazyLoad(img))
-  let btnForward = document.getElementById('ctrl-forward')
-  let btnBackward = document.getElementById('ctrl-backward')
-
-  // show the first content item
-  State.nodes[State.visible].classList.remove('hidden')
-
   // event handler where the magic happens
   let scrollHandler = (e) => {
     let up
@@ -49,6 +32,15 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   ;(function init(){
+    State.page = 1
+    State.rover = 0
+    State.tick = false
+    State.visible = 0
+    State.lastX = undefined
+    State.main = document.querySelector('div.wrapper-main')
+    State.nodes = Array.from(document.querySelectorAll('div.wrapper-item'))
+    State.seen = State.nodes.map((el) => el.dataset.id)
+
     document.addEventListener('mousewheel', scrollHandler)
     document.addEventListener('DOMMouseScroll', scrollHandler)
     document.addEventListener('touchmove', scrollHandler)
@@ -75,9 +67,13 @@ function* update(uri) {
       return
     }
     for (let item of list) {
-      let node = mkNode(item)
-      State.nodes.push(node)
-      State.main.append(node)
+      // do not append duplicates
+      if (!~State.seen.indexOf(item.id)) {
+        let node = mkNode(item)
+        State.main.append(node)
+        State.nodes.push(node)
+        State.seen.push(item.id)
+      }
     }
     State.page++
   } catch (err) {
@@ -146,16 +142,6 @@ function mkNode(data) {
   return div
 }
 
-/**
-* Lazy load initial images in rendered markup
-* @param {Object} img - an array-like list of <img> DOM nodes in the initial index.html
-*
-* @return {Object}
-*/
-function lazyLoad(img) {
-  img.src = img.dataset.src
-  return img
-}
 
 /**
 * Convenience function for building the api route

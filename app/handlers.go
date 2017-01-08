@@ -15,7 +15,7 @@ func serveIndex(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	rover := "spirit"
+	rover := "curiosity"
 	limit := 10
 	rows, err := db.Query("SELECT id, sol, rover, camera, earthdate, s3imgsrc FROM photos WHERE rover=$1 order by sol desc, id desc limit $2", rover, limit)
 	var data []photo

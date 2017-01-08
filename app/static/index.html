@@ -3,24 +3,28 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html"; charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pictures from Space</title>
+  <title>Mars</title>
   <link rel="stylesheet" type="text/css" href="static/reset.css" />
   <link rel="stylesheet" type="text/css" href="static/styles.css" />
 </head>
 <body>
   <div class="wrapper-main">
-    {{ range . }}
-    <div class="wrapper-item hidden" data-id="{{.Id}}">
+    {{ range $index, $el := . }}
+      {{ if $index }}
+        <div class="wrapper-item hidden" data-id="{{$el.Id}}">
+        {{ else }}
+        <div class="wrapper-item" data-id="{{$el.Id}}">
+      {{ end }}
       <div class="img-container">
-        <img src="" class="photo" data-src={{.S3ImgSrc}}></img>
+        <img src="" class="photo" data-src={{$el.S3ImgSrc}}></img>
       </div>
       <div class="metadata">
         <ul>
-          <li>image id: {{.Id}}</li>
-          <li>martian sol: {{.Sol}}</li>
-          <li>earth date: {{.EarthDate}}</li>
-          <li>rover: {{.Rover}}</li>
-          <li>camera: {{.Camera}}</li>
+          <li>image id: {{$el.Id}}</li>
+          <li>martian sol: {{$el.Sol}}</li>
+          <li>earth date: {{$el.EarthDate}}</li>
+          <li>rover: {{$el.Rover}}</li>
+          <li>camera: {{$el.Camera}}</li>
           <li><button class="ctrl-btn" type="button" name="backward" id="ctrl-backward">regress</button></li>
           <li><button class="ctrl-btn" type="button" name="forward" id="ctrl-forward">advance</button></li>
         </ul>
@@ -33,6 +37,7 @@
     {{ end }}
   </div>
 
-  <script src="static/bundle.js"></script>
+  <script src="static/dist/init.js"></script>
+  <script src="static/dist/bundle.js"></script>
 </body>
 </html>
