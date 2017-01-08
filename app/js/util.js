@@ -1,6 +1,3 @@
-'use strict';
-
-const Util = (function() {
   /**
   * A helper for doing async tasks with generators
   * @param {Function} generatorFn - a generator function to run asynchronously
@@ -8,7 +5,7 @@ const Util = (function() {
   */
   let iterator
 
-  function run(generatorFn) {
+  export function doGenerator(generatorFn) {
     let args = [].slice.call(arguments, 1)
     // initialize the generator in the current context with args
     iterator = generatorFn.apply(this, args)
@@ -38,11 +35,11 @@ const Util = (function() {
   * A quick and dirty ES6 solution via http://www.2ality.com/2015/01/template-strings-html.html
   *
   * @param  {Function} literalSections - ES6 template literal strings for the template
-  * @param  {Array} wait - time between function calls
+  * @param  {Array} substs - the data that will fill in the template
   *
   * @return {Function}
   */
-  function html(literalSections, ...substs) {
+  export function template(literalSections, ...substs) {
     // Use raw literal sections: we don’t want
     // backslashes (\n etc.) to be interpreted
     let raw = literalSections.raw
@@ -77,10 +74,3 @@ const Util = (function() {
 
     return result
   }
-
-  // public API
-  return {
-    generator: run,
-    template: html
-  }
-})()

@@ -1,4 +1,6 @@
-'use strict';
+import 'babel-polyfill'
+import 'whatwg-fetch'
+import { doGenerator, template } from './util'
 
 const ROVERS = ['spirit', 'curiosity', 'opportunity']
 
@@ -39,7 +41,6 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   let btnDownHandler = (e) => {
-    console.log(e);
     if (!e.target || !e.target.matches('button.ctrl-btn')) {
       return
     }
@@ -107,7 +108,7 @@ function changeScene(back) {
       // fetch and append new images when scroll is getting close to the end
       if (State.visible >= (State.nodes.length - 10)) {
         let route = makeRoute(ROVERS[State.rover], State.page)
-        Util.generator(update, route)
+        doGenerator(update, route)
       }
       State.tick = false
     })
@@ -124,7 +125,7 @@ function changeScene(back) {
 function mkNode(data) {
   let div = document.createElement('div')
   div.classList.add('wrapper-item', 'hidden')
-  const template = p => Util.template`
+  const tmpl = p => template`
   <div class="img-container">
     <img src="${p.img_src}" class="photo"></img>
   </div>
@@ -140,7 +141,7 @@ function mkNode(data) {
     </ul>
   </div>
   `
-  div.innerHTML = template(data)
+  div.innerHTML = tmpl(data)
   div.dataset.id = data.id
   return div
 }

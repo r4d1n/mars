@@ -1,4 +1,4 @@
-# nasa-mars-photos
+# mars
 
 ####There are two parts to this project:
 

@@ -20,5 +20,8 @@
             "warn",
             "never"
         ]
+    },
+    "parserOptions": {
+      "sourceType": "module"
     }
 }
