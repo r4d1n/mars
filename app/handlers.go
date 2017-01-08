@@ -11,7 +11,10 @@ import (
 )
 
 func serveIndex(w http.ResponseWriter, r *http.Request) {
-	t, _ := template.ParseFiles("index.html")
+	t, err := template.ParseFiles("index.html")
+	if err != nil {
+		log.Fatal(err)
+	}
 	rover := "spirit"
 	limit := 10
 	rows, err := db.Query("SELECT id, sol, rover, camera, earthdate, s3imgsrc FROM photos WHERE rover=$1 order by sol desc, id desc limit $2", rover, limit)
@@ -28,7 +31,12 @@ func serveIndex(w http.ResponseWriter, r *http.Request) {
 		}
 		data = append(data, p)
 	}
-	t.Execute(w, data)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err := t.Execute(w, data); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func getRoverPhotos(w http.ResponseWriter, r *http.Request) {
