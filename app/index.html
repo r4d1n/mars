@@ -2,6 +2,7 @@
 <html>
 <head>
   <meta http-equiv="Content-Type" content="text/html"; charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pictures from Space</title>
   <link rel="stylesheet" type="text/css" href="static/reset.css" />
   <link rel="stylesheet" type="text/css" href="static/styles.css" />
@@ -20,6 +21,12 @@
           <li>earth date: {{.EarthDate}}</li>
           <li>rover: {{.Rover}}</li>
           <li>camera: {{.Camera}}</li>
+          <li><button class="ctrl-btn" type="button" name="backward" id="ctrl-backward">regress</button></li>
+          <li><button class="ctrl-btn" type="button" name="forward" id="ctrl-forward">advance</button></li>
+        </ul>
+      </div>
+      <div class="btn-container">
+        <ul>
         </ul>
       </div>
     </div>

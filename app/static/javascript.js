@@ -8,7 +8,8 @@ State.page = 1
 State.rover = 0
 State.tick = false
 State.visible = 0
-State.lastY = undefined
+State.lastX = undefined
+State.btnHold = false
 
 document.addEventListener('DOMContentLoaded', function() {
   // cache some dom elements
@@ -16,6 +17,8 @@ document.addEventListener('DOMContentLoaded', function() {
   State.nodes = Array.from(document.querySelectorAll('div.wrapper-item'))
   // load in the images
   let photos = Array.from(document.querySelectorAll('img.photo'), (img) => lazyLoad(img))
+  let btnForward = document.getElementById('ctrl-forward')
+  let btnBackward = document.getElementById('ctrl-backward')
 
   // show the first content item
   State.nodes[State.visible].classList.remove('hidden')
@@ -28,38 +31,29 @@ document.addEventListener('DOMContentLoaded', function() {
     if (e.deltaY && e.deltaY > 0) up = false
     // for touch events
     if (e.type === 'touchmove') {
-      if (State.lastY && State.lastY > e.touches[0].clientY) up = true
-      if (State.lastY && State.lastY < e.touches[0].clientY) up = false
-      State.lastY = e.touches[0].clientY
+      if (State.lastX && State.lastX > e.touches[0].clientX) up = true
+      if (State.lastX && State.lastX < e.touches[0].clientX) up = false
+      State.lastX = e.touches[0].clientY
     }
-    if (up && State.visible === 0) return // don't do anything if someone scrolls up right away
-    if (!State.tick) {
-      window.requestAnimationFrame(function() {
-        // manage visible image state
-        // first hide the current image
-        State.nodes[State.visible].classList.add('hidden')
-        // then figure out which one should be shown next
-        if (!up) State.visible++
-        if (up) State.visible--
-        if (State.visible >= State.nodes.length) State.visible = State.nodes.length - 1
-        if (State.visible < 0) State.visible = 0
-        // now show the correct visible image
-        State.nodes[State.visible].classList.remove('hidden')
-        // fetch and append new images when scroll is getting close to the end
-        if (State.visible >= (State.nodes.length - 10)) {
-          let route = makeRoute(ROVERS[State.rover], State.page)
-          Util.generator(update, route)
-        }
-        State.tick = false
-      })
+    changeScene(up)
+  }
+
+  let btnDownHandler = (e) => {
+    console.log(e);
+    if (!e.target || !e.target.matches('button.ctrl-btn')) {
+      return
     }
-    State.tick = true
+    let up = e.target.id === 'ctrl-backward' ? true : false
+    changeScene(up)
   }
 
   ;(function init(){
-    State.main.addEventListener('mousewheel', scrollHandler)
-    State.main.addEventListener('DOMMouseScroll', scrollHandler)
-    State.main.addEventListener('touchmove', scrollHandler)
+    document.addEventListener('mousewheel', scrollHandler)
+    document.addEventListener('DOMMouseScroll', scrollHandler)
+    document.addEventListener('touchmove', scrollHandler)
+
+    document.addEventListener('mousedown', btnDownHandler)
+    document.addEventListener('mousedown', btnDownHandler)
   })()
 })
 
@@ -92,6 +86,37 @@ function* update(uri) {
 
 /**
 * Make new dom nodes with image data
+* @param {Boolean} back - true if the previous image should be shown instead of the next image
+*
+* @return {Object}
+*/
+function changeScene(back) {
+  if (back && State.visible === 0) return // don't do anything if someone scrolls up/clicks back right away
+  if (!State.tick) {
+    window.requestAnimationFrame(function() {
+      // manage visible image state
+      // first hide the current image
+      State.nodes[State.visible].classList.add('hidden')
+      // then figure out which one should be shown next
+      if (!back) State.visible++
+      if (back) State.visible--
+      if (State.visible >= State.nodes.length) State.visible = State.nodes.length - 1
+      if (State.visible < 0) State.visible = 0
+      // now show the correct visible image
+      State.nodes[State.visible].classList.remove('hidden')
+      // fetch and append new images when scroll is getting close to the end
+      if (State.visible >= (State.nodes.length - 10)) {
+        let route = makeRoute(ROVERS[State.rover], State.page)
+        Util.generator(update, route)
+      }
+      State.tick = false
+    })
+  }
+  State.tick = true
+}
+
+/**
+* Make new dom nodes with image data
 * @param {Object} data - data for one image container div
 *
 * @return {Object}
@@ -110,6 +135,8 @@ function mkNode(data) {
       <li>earth date: ${p.earth_date}</li>
       <li>rover: ${p.rover}</li>
       <li>camera: ${p.camera}</li>
+      <li><button class="ctrl-btn" type="button" name="backward" id="ctrl-backward">regress</button></li>
+      <li><button class="ctrl-btn" type="button" name="forward" id="ctrl-forward">advance</button></li>
     </ul>
   </div>
   `
