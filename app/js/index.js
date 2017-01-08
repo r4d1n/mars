@@ -1,24 +1,18 @@
 import 'babel-polyfill'
 import 'whatwg-fetch'
 import { doGenerator, template } from './util'
+import { update, mkRoute } from './update'
 
 const ROVERS = ['spirit', 'curiosity', 'opportunity']
 
 // an object for app state
 let State = {}
-State.page = 1
-State.rover = 0
-State.tick = false
-State.visible = 0
-State.lastX = undefined
-State.btnHold = false
 
 document.addEventListener('DOMContentLoaded', function() {
   // cache some dom elements
   State.main = document.querySelector('div.wrapper-main')
   State.nodes = Array.from(document.querySelectorAll('div.wrapper-item'))
   // load in the images
-  let photos = Array.from(document.querySelectorAll('img.photo'), (img) => lazyLoad(img))
   let btnForward = document.getElementById('ctrl-forward')
   let btnBackward = document.getElementById('ctrl-backward')
 
@@ -49,6 +43,16 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   ;(function init(){
+    State.page = 1
+    State.rover = 0
+    State.tick = false
+    State.visible = 0
+    State.lastX = undefined
+    State.fetched = []
+
+    let route = mkRoute(ROVERS[State.rover], State.page)
+    
+    doGenerator(update, route)
     document.addEventListener('mousewheel', scrollHandler)
     document.addEventListener('DOMMouseScroll', scrollHandler)
     document.addEventListener('touchmove', scrollHandler)
@@ -57,33 +61,6 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('mousedown', btnDownHandler)
   })()
 })
-
-/**
-* Fetch images and metadata and append to the DOM
-* @param {string} uri - a generator function to run asynchronously
-*/
-function* update(uri) {
-  try {
-    let res = yield fetch(uri) // returns a promise for the response
-    let list = yield res.json() // returns a promise for json
-    if (!list || list.length < 10) {
-      State.rover++
-      if (State.rover > ROVERS.length) {
-        State.rover = 0
-      }
-      State.page = 0
-      return
-    }
-    for (let item of list) {
-      let node = mkNode(item)
-      State.nodes.push(node)
-      State.main.append(node)
-    }
-    State.page++
-  } catch (err) {
-    console.error(err)
-  }
-}
 
 /**
 * Make new dom nodes with image data
@@ -105,65 +82,11 @@ function changeScene(back) {
       if (State.visible < 0) State.visible = 0
       // now show the correct visible image
       State.nodes[State.visible].classList.remove('hidden')
-      // fetch and append new images when scroll is getting close to the end
-      if (State.visible >= (State.nodes.length - 10)) {
-        let route = makeRoute(ROVERS[State.rover], State.page)
-        doGenerator(update, route)
-      }
+      let route = makeRoute(ROVERS[State.rover], State.page)
+      doGenerator(update, route)
       State.tick = false
     })
+
   }
   State.tick = true
-}
-
-/**
-* Make new dom nodes with image data
-* @param {Object} data - data for one image container div
-*
-* @return {Object}
-*/
-function mkNode(data) {
-  let div = document.createElement('div')
-  div.classList.add('wrapper-item', 'hidden')
-  const tmpl = p => template`
-  <div class="img-container">
-    <img src="${p.img_src}" class="photo"></img>
-  </div>
-  <div class="metadata">
-    <ul>
-      <li>image id: ${p.id}</li>
-      <li>martian sol: ${p.sol}</li>
-      <li>earth date: ${p.earth_date}</li>
-      <li>rover: ${p.rover}</li>
-      <li>camera: ${p.camera}</li>
-      <li><button class="ctrl-btn" type="button" name="backward" id="ctrl-backward">regress</button></li>
-      <li><button class="ctrl-btn" type="button" name="forward" id="ctrl-forward">advance</button></li>
-    </ul>
-  </div>
-  `
-  div.innerHTML = tmpl(data)
-  div.dataset.id = data.id
-  return div
-}
-
-/**
-* Lazy load initial images in rendered markup
-* @param {Object} img - an array-like list of <img> DOM nodes in the initial index.html
-*
-* @return {Object}
-*/
-function lazyLoad(img) {
-  img.src = img.dataset.src
-  return img
-}
-
-/**
-* Convenience function for building the api route
-* @param {String} rover - the rover whose data we want
-* @param {String} page - the page of data we want
-*
-* @return {String}
-*/
-function makeRoute (rover, page) {
-  return `/rover/${rover}/page/${page}`
 }

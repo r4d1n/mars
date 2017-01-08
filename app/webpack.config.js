@@ -1,10 +1,13 @@
 module.exports = {
-  entry: ['babel-polyfill', 'whatwg-fetch', './js/index.js'],
+  entry: {
+    init: './js/init.js',
+    bundle: ['babel-polyfill', 'whatwg-fetch', './js/index.js']
+  },
   output: {
     path: './static',
-    filename: 'bundle.js'
+    filename: '[name].js'
   },
-  devtool: "inline-source-map",
+  devtool: 'inline-source-map',
   module: {
     loaders: [
       {

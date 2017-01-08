@@ -8,9 +8,9 @@
   <link rel="stylesheet" type="text/css" href="static/styles.css" />
 </head>
 <body>
+  <script src="static/init.js"></script>
   <div class="wrapper-main">
-    {{ range . }}
-    <div class="wrapper-item hidden" data-id="{{.Id}}">
+    <div class="wrapper-item" data-id="{{.Id}}">
       <div class="img-container">
         <img src="" class="photo" data-src={{.S3ImgSrc}}></img>
       </div>
@@ -25,12 +25,7 @@
           <li><button class="ctrl-btn" type="button" name="forward" id="ctrl-forward">advance</button></li>
         </ul>
       </div>
-      <div class="btn-container">
-        <ul>
-        </ul>
-      </div>
     </div>
-    {{ end }}
   </div>
 
   <script src="static/bundle.js"></script>

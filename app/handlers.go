@@ -16,25 +16,13 @@ func serveIndex(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 	rover := "spirit"
-	limit := 10
-	rows, err := db.Query("SELECT id, sol, rover, camera, earthdate, s3imgsrc FROM photos WHERE rover=$1 order by sol desc, id desc limit $2", rover, limit)
-	var data []photo
+	limit := 1
+	var p photo
+	err = db.QueryRow("SELECT id, sol, rover, camera, earthdate, s3imgsrc FROM photos WHERE rover=$1 order by sol desc, id desc limit $2", rover, limit).Scan(&p.Id, &p.Sol, &p.Rover, &p.Camera, &p.EarthDate, &p.S3ImgSrc)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer rows.Close()
-	for rows.Next() {
-		var p photo
-		err = rows.Scan(&p.Id, &p.Sol, &p.Rover, &p.Camera, &p.EarthDate, &p.S3ImgSrc)
-		if err != nil {
-			log.Fatal(err)
-		}
-		data = append(data, p)
-	}
-	if err != nil {
-		log.Fatal(err)
-	}
-	if err := t.Execute(w, data); err != nil {
+	if err := t.Execute(w, p); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -44,7 +32,7 @@ func getRoverPhotos(w http.ResponseWriter, r *http.Request) {
 	rover := mux.Vars(r)["rover"]
 	page, err := strconv.Atoi(mux.Vars(r)["page"])
 	limit := 10
-	page = page * limit
+	page = page*limit + 1
 	rows, err := db.Query("SELECT id, sol, rover, camera, earthdate, s3imgsrc FROM photos WHERE rover=$1 order by sol desc, id desc limit $2 offset $3", rover, limit, page)
 	if err != nil {
 		log.Fatal(err)
