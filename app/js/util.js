@@ -1,35 +1,4 @@
   /**
-  * A helper for doing async tasks with generators
-  * @param {Function} generatorFn - a generator function to run asynchronously
-  * Additional arguments are passed to the generator
-  */
-  let iterator
-
-  export function doGenerator(generatorFn) {
-    let args = [].slice.call(arguments, 1)
-    // initialize the generator in the current context with args
-    iterator = generatorFn.apply(this, args)
-    return Promise.resolve()
-    .then(() => handleResult(iterator.next()))
-  }
-
-  function handleResult(next){
-    if (next.done) {
-      return next.value
-    } else {
-      return Promise.resolve(next.value)
-      // pass current value back to the generator and recurse with what comes back
-      .then((val) => {
-        return handleResult(iterator.next(val))
-      })
-      .catch((err) => {
-        // pass error back into the generator
-        return iterator.throw(err)
-      })
-    }
-  }
-
-  /**
   * HTML Templating
   *
   * A quick and dirty ES6 solution via http://www.2ality.com/2015/01/template-strings-html.html
@@ -44,7 +13,7 @@
     // backslashes (\n etc.) to be interpreted
     let raw = literalSections.raw
 
-    let result = ''
+    let result = ""
 
     substs.forEach((subst, i) => {
       // Retrieve the literal section preceding
@@ -55,12 +24,12 @@
       // If substitution is an array (and not a string),
       // we turn it into a string
       if (Array.isArray(subst)) {
-        subst = subst.join('')
+        subst = subst.join("")
       }
 
       // If the substitution is preceded by a dollar sign,
       // we escape special characters in it
-      if (lit.endsWith('$')) {
+      if (lit.endsWith("$")) {
         subst = htmlEscape(subst)
         lit = lit.slice(0, -1)
       }

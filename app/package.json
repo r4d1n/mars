@@ -3,13 +3,14 @@
   "version": "1.0.0",
   "description": "pictures from mars via nasa",
   "scripts": {
-    "build": "go build && webpack"
+    "build": "go build -o dist/app && webpack && cp index.html dist && cp static/*.css dist/static"
   },
   "devDependencies": {
     "babel-core": "^6.21.0",
     "babel-loader": "^6.2.10",
     "babel-polyfill": "^6.20.0",
     "babel-preset-es2015": "^6.18.0",
+    "bundle-loader": "^0.5.4",
     "webpack": "^1.14.0",
     "whatwg-fetch": "^2.0.1"
   }

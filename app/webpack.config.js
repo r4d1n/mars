@@ -1,25 +1,33 @@
+const webpack = require("webpack")
+
 module.exports = {
   entry: {
-    init: './js/init.js',
-    bundle: ['babel-polyfill', 'whatwg-fetch', './js/index.js']
+    bundle: ["whatwg-fetch", "./js/index.js"]
   },
   output: {
-    path: './static/dist',
-    filename: '[name].js'
+    path: "./dist/static",
+    filename: "[name].js"
   },
-  devtool: 'inline-source-map',
+  devtool: "inline-source-map",
   module: {
     loaders: [
       {
         test: /\.js$/,
-        loader: 'babel-loader',
+        loader: "babel-loader",
         query: {
-          presets: ['es2015']
+          presets: ["es2015"]
         }
       }
     ]
   },
   resolve: {
-    extensions: ['', '.js', '.json']
+    extensions: ["", ".js", ".json"]
   }
+  //, plugins: [
+  //   new webpack.optimize.UglifyJsPlugin({
+  //     compress: {
+  //       warnings: false
+  //     }
+  //   })
+  // ]
 }

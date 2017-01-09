@@ -11,7 +11,7 @@ import (
 )
 
 func serveIndex(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFiles("./static/index.html")
+	t, err := template.ParseFiles("./index.html")
 	if err != nil {
 		log.Fatal(err)
 	}

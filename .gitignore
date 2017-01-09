@@ -4,4 +4,4 @@ app/app
 env/
 node_modules
 npm-debug.log
-app/static/dist
+app/dist/
