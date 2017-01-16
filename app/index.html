@@ -11,16 +11,16 @@
   <div class="wrapper-main">
     {{ range $index, $el := . }}
       {{ if $index }}
-        <div class="wrapper-item hidden" data-id="{{$el.Id}}">
+        <div class="wrapper-item hidden" data-id="{{$el.ID}}">
         {{ else }}
-        <div class="wrapper-item" data-id="{{$el.Id}}">
+        <div class="wrapper-item" data-id="{{$el.ID}}">
       {{ end }}
       <div class="img-container">
         <img src="" class="photo" data-src={{$el.S3ImgSrc}}></img>
       </div>
       <div class="metadata">
         <ul>
-          <li>image id: {{$el.Id}}</li>
+          <li>image id: {{$el.ID}}</li>
           <li>martian sol: {{$el.Sol}}</li>
           <li>earth date: {{$el.EarthDate}}</li>
           <li>rover: {{$el.Rover}}</li>

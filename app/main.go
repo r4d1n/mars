@@ -30,7 +30,7 @@ func main() {
 	flag.Parse()
 	r := mux.NewRouter()
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir(static))))
-	r.HandleFunc("/rover/{rover}/page/{page}", getRoverPhotos)
+	r.HandleFunc("/rover/{rover}/limit/{limit}/page/{page}", getRoverPhotos)
 	r.HandleFunc("/", serveIndex)
 	server := &http.Server{
 		Addr:         ":8080",

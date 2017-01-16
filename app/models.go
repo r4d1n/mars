@@ -1,7 +1,7 @@
 package main
 
 type photo struct {
-	Id        int    `json:"id"`
+	ID        int    `json:"id"`
 	Sol       int    `json:"sol"`
 	Rover     string `json:"rover"`
 	Camera    string `json:"camera"`

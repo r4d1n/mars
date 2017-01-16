@@ -1,13 +1,17 @@
 import "whatwg-fetch"
 
 import { template } from "./util"
+import { throttle } from "lodash"
 
 const ROVERS = ["curiosity", "spirit", "opportunity"]
+
+let Config = {}
+Config.limit = 10
 
 // an object for app state
 let State = {}
 
-document.addEventListener("DOMContentLoaded", function init(){
+document.addEventListener("DOMContentLoaded", function init() {
   // start lazy loading the first images right away
   let photos = Array.from(document.querySelectorAll("img.photo"), (img) => lazyLoad(img))
 
@@ -23,7 +27,7 @@ document.addEventListener("DOMContentLoaded", function init(){
   }
 
   // event handler where the magic happens
-  let scrollHandler = (e) => {
+  let scrollHandler = throttle((e) => {
     let up
     // for wheel events
     if (e.deltaY && e.deltaY < 0) up = true
@@ -35,7 +39,7 @@ document.addEventListener("DOMContentLoaded", function init(){
       State.lastX = e.touches[0].clientY
     }
     changeScene(up)
-  }
+  }, 500, { leading: true })
 
   let btnDownHandler = (e) => {
     if (!e.target || !e.target.matches("button.ctrl-btn")) {
@@ -69,30 +73,30 @@ document.addEventListener("DOMContentLoaded", function init(){
 function update(uri) {
   try {
     fetch(uri) // returns a promise for the response
-    .then((res) => {
-      if (res) return res.json()
-    })
-    .then((list) => {
-      if (!list || list.length < 10) {
-        State.rover++
-        if (State.rover > ROVERS.length) {
-          State.rover = 0
+      .then((res) => {
+        if (res) return res.json()
+      })
+      .then((list) => {
+        if (!list || list.length < 10) {
+          State.rover++
+          if (State.rover > ROVERS.length) {
+            State.rover = 0
+          }
+          State.page = 0
+          return
         }
-        State.page = 0
-        return
-      }
-      while (list.length) {
-        let item = list.shift()
-        // do not append duplicates
-        if (!~State.seen.indexOf(item.id)) {
-          let node = mkNode(item)
-          State.main.append(node)
-          State.nodes.push(node)
-          State.seen.push(item.id)
+        while (list.length) {
+          let item = list.shift()
+          // do not append duplicates
+          if (!~State.seen.indexOf(item.id)) {
+            let node = mkNode(item)
+            State.main.append(node)
+            State.nodes.push(node)
+            State.seen.push(item.id)
+          }
         }
-      }
-      State.page++
-    })
+        State.page++
+      })
   } catch (err) {
     console.error(err)
   }
@@ -107,7 +111,7 @@ function update(uri) {
 function changeScene(back) {
   if (back && State.visible === 0) return // do nothing if someone scrolls up/clicks back right away
   if (!State.tick) {
-    window.requestAnimationFrame(function() {
+    window.requestAnimationFrame(function () {
       // manage visible image state
       // first hide the current image
       State.nodes[State.visible].classList.add("hidden")
@@ -120,7 +124,7 @@ function changeScene(back) {
       State.nodes[State.visible].classList.remove("hidden")
       // fetch and append new images when scroll is getting close to the end
       if (State.visible >= (State.nodes.length - 10)) {
-        let route = makeRoute(ROVERS[State.rover], State.page)
+        let route = mkRoute(ROVERS[State.rover], Config.limit, State.page)
         update(route)
       }
       State.tick = false
@@ -167,6 +171,6 @@ function mkNode(data) {
 *
 * @return {String}
 */
-function makeRoute (rover, page) {
-  return `/rover/${rover}/page/${page}`
+function mkRoute(rover, limit, page) {
+  return `/rover/${rover}/limit/${limit}/page/${page}`
 }
