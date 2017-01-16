@@ -31,7 +31,7 @@ type Manifest struct {
 
 func (s Scraper) crawl(name string) error {
 	last, err := checkLastInsert(name)
-	fmt.Printf("rover %s: last saved image %d of sol: %d \n", name, last.Id, last.Sol)
+	fmt.Printf("rover %s: last saved image %d of sol: %d \n", name, last.ID, last.Sol)
 	if err != nil {
 		return err
 	}
@@ -73,7 +73,7 @@ func (s Scraper) crawl(name string) error {
 			for j := index + 1; j < len(photos); j++ {
 				ph := photos[j]
 				ph.Rover = name
-				fmt.Printf("ph id: %d / sol: %d / rover: %s \n", ph.Id, ph.Sol, ph.Rover)
+				fmt.Printf("ph id: %d / sol: %d / rover: %s \n", ph.ID, ph.Sol, ph.Rover)
 				err := ph.CopyToS3(s.AWSRegion, s.S3Bucket)
 				if err != nil {
 					return err
@@ -91,7 +91,7 @@ func (s Scraper) crawl(name string) error {
 // find the last saved photo from this rover
 func checkLastInsert(rover string) (Photo, error) {
 	var p Photo
-	err := db.QueryRow("select id, sol from photos where rover=$1 order by sol desc, id desc limit 1", rover).Scan(&p.Id, &p.Sol)
+	err := db.QueryRow("select id, sol from photos where rover=$1 order by sol desc, id desc limit 1", rover).Scan(&p.ID, &p.Sol)
 	if err == sql.ErrNoRows {
 		return p, nil
 	} else if err != nil {

@@ -47,7 +47,7 @@ func (c Sols) IndexOf(s Sol) int {
 
 // Photo represents a single image and associated metadata
 type Photo struct {
-	Id         int
+	ID         int
 	Sol        int
 	Rover      string `json:"rover.name"`
 	Camera     Camera
@@ -64,7 +64,7 @@ func (slice Photos) Len() int {
 }
 
 func (slice Photos) Less(i, j int) bool {
-	return slice[i].Id < slice[j].Id
+	return slice[i].ID < slice[j].ID
 }
 
 func (slice Photos) Swap(i, j int) {
@@ -73,7 +73,7 @@ func (slice Photos) Swap(i, j int) {
 
 func (c Photos) IndexOf(p Photo) int {
 	for i, val := range c {
-		if val.Id == p.Id {
+		if val.ID == p.ID {
 			return i
 		}
 	}
@@ -89,15 +89,15 @@ func (p *Photo) Save() (err error) {
 	statement := "INSERT INTO photos (id, sol, rover, camera, earthdate, nasaimgsrc, s3imgsrc) VALUES($1, $2, $3, $4, $5, $6, $7) returning id"
 	stmt, err := db.Prepare(statement)
 	if err != nil {
-		return fmt.Errorf("saving image %d to db: %v", p.Id, err)
+		return fmt.Errorf("saving image %d to db: %v", p.ID, err)
 	}
 	defer stmt.Close()
-	err = stmt.QueryRow(p.Id, p.Sol, p.Rover, p.Camera.Name, p.EarthDate, p.NasaImgSrc, p.S3ImgSrc).Scan(&p.Id)
+	err = stmt.QueryRow(p.ID, p.Sol, p.Rover, p.Camera.Name, p.EarthDate, p.NasaImgSrc, p.S3ImgSrc).Scan(&p.ID)
 	if err != nil {
 		fmt.Println(err)
-		return fmt.Errorf("saving image %d to db: %v", p.Id, err)
+		return fmt.Errorf("saving image %d to db: %v", p.ID, err)
 	} else {
-		log.Printf("successfully saved data for image %d \n", p.Id)
+		log.Printf("successfully saved data for image %d \n", p.ID)
 	}
 	return
 }
@@ -105,7 +105,7 @@ func (p *Photo) Save() (err error) {
 func (p *Photo) CopyToS3(region string, bucket string) (err error) {
 	res, err := http.Get(p.NasaImgSrc)
 	if err != nil {
-		return fmt.Errorf("retrieving image %d from nasa: %v", p.Id, err)
+		return fmt.Errorf("retrieving image %d from nasa: %v", p.ID, err)
 	} else {
 		defer res.Body.Close()
 		reader := bufio.NewReader(res.Body)
@@ -113,10 +113,10 @@ func (p *Photo) CopyToS3(region string, bucket string) (err error) {
 		result, err := uploader.Upload(&s3manager.UploadInput{
 			Body:   reader,
 			Bucket: aws.String(bucket),
-			Key:    aws.String(fmt.Sprintf("%s/%d.jpg", p.Rover, p.Id)),
+			Key:    aws.String(fmt.Sprintf("%s/%d.jpg", p.Rover, p.ID)),
 		})
 		if err != nil {
-			return fmt.Errorf("uploading image %d to s3: %v", p.Id, err)
+			return fmt.Errorf("uploading image %d to s3: %v", p.ID, err)
 		}
 		log.Printf("completed upload to s3 url: %s \n", result.Location)
 		p.S3ImgSrc = result.Location
