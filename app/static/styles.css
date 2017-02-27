@@ -1,9 +1,8 @@
-html {
+/*html {
   position: fixed;
-}
+}*/
 
 html, body {
-  overflow:hidden;
   height: 100%;
   width: 100%;
 }
@@ -14,15 +13,11 @@ body {
 }
 
 /* a common helper class */
-.hidden {
+/*.hidden {
   display: none;
-}
+}*/
 
 /* main layout */
-
-div.wrapper-main {
-  overflow: hidden;
-}
 
 div.wrapper-item {
   margin: 0 auto;
@@ -59,12 +54,6 @@ img.photo {
 
 .metadata > ul > li {
   padding-bottom: 0.25em;
-}
-
-button.ctrl-btn {
-  width: 100%;
-  height: 3em;
-  margin-top: 0.5em;
 }
 
 /* media queries */

@@ -1,20 +1,18 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-  <meta http-equiv="Content-Type" content="text/html"; charset="utf-8" />
+  <meta http-equiv="Content-Type" content="text/html" ; charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mars</title>
   <link rel="stylesheet" type="text/css" href="/static/reset.css" />
   <link rel="stylesheet" type="text/css" href="/static/styles.css" />
 </head>
+
 <body>
-  <div class="wrapper-main">
+  <div class="wrapper-main" id="scroll-target">
     {{ range $index, $el := . }}
-      {{ if $index }}
-        <div class="wrapper-item hidden" data-id="{{$el.ID}}">
-        {{ else }}
-        <div class="wrapper-item" data-id="{{$el.ID}}">
-      {{ end }}
+    <div class="wrapper-item" data-id="{{$el.ID}}">
       <div class="img-container">
         <img src="" class="photo" data-src={{$el.S3ImgSrc}}></img>
       </div>
@@ -25,8 +23,6 @@
           <li>earth date: {{$el.EarthDate}}</li>
           <li>rover: {{$el.Rover}}</li>
           <li>camera: {{$el.Camera}}</li>
-          <li><button class="ctrl-btn" type="button" name="backward" id="ctrl-backward">regress</button></li>
-          <li><button class="ctrl-btn" type="button" name="forward" id="ctrl-forward">advance</button></li>
         </ul>
       </div>
       <div class="btn-container">
@@ -39,4 +35,5 @@
 
   <script src="/static/bundle.js"></script>
 </body>
+
 </html>
