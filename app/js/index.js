@@ -7,19 +7,20 @@
 // // an object for app state
 // let State = {}
 
-import { InfiniteScroll } from "./infinitescroll"
+import { InfiniteScroll } from './infinitescroll';
 
-document.addEventListener("DOMContentLoaded", function init() {
+document.addEventListener('DOMContentLoaded', function init() {
   // start lazy loading the first images right away
-  let photos = Array.from(document.querySelectorAll("img.photo"), (img) => lazyLoad(img))
+  let photos = Array.from(document.querySelectorAll('img.photo'), (img) => lazyLoad(img));
 
-
-  let scroll = new InfiniteScroll(document.getElementById('scroll-target'))
+  let target = document.getElementById('scroll-target');
+  console.log('target:', target);
+  let scroll = new InfiniteScroll(target);
 
   // document.addEventListener("mousewheel", scrollHandler)
   // document.addEventListener("DOMMouseScroll", scrollHandler)
   // document.addEventListener("touchmove", scrollHandler)
-})
+});
 
   /**
   * Lazy load initial images in rendered markup
@@ -28,8 +29,8 @@ document.addEventListener("DOMContentLoaded", function init() {
   * @return {Object}
   */
   function lazyLoad(img) {
-    img.src = img.dataset.src
-    return img
+    img.src = img.dataset.src;
+    return img;
   }
 
 /**

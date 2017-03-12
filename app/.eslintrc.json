@@ -14,11 +14,7 @@
         ],
         "quotes": [
             "warn",
-            "double"
-        ],
-        "semi": [
-            "warn",
-            "never"
+            "single"
         ]
     },
     "parserOptions": {

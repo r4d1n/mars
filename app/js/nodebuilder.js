@@ -1,6 +1,34 @@
 import "whatwg-fetch"
 
-const TEMPLATE_STRING = `<div class="img-container">
+export class NodeBuilder {
+  constructor() {}
+
+  getData(uri) {
+    fetch(uri)
+      .then((res) => res.json())
+      .catch((err) => console.error(err));
+  }
+
+  /**
+  * Make and append a dom node for a new item
+  * @param {object} data - the data to render
+  * @param {Element} target - the DOM element to append to
+  */
+  render(data, target) {
+    let node = this._mkNode(data);
+    target.append(node);
+  }
+
+  /**
+  * Make new dom nodes with image data
+  * @param {Object} data - data for one image container div
+  *
+  * @return {Element}
+  */
+  _mkNode(data) {
+    let div = document.createElement("div");
+    div.classList.add("wrapper-item");
+    const tmpl = p => this._template(`<div class="img-container">
         <img src="${p.img_src}" class="photo"></img>
       </div>
       <div class="metadata">
@@ -11,40 +39,21 @@ const TEMPLATE_STRING = `<div class="img-container">
           <li>rover: ${p.rover}</li>
           <li>camera: ${p.camera}</li>
         </ul>
-      </div>`
-
-export class NodeBuilder {
-  constructor() {}
-
-  getData(uri) {
-    fetch(uri)
-      .then((res) => res.json())
-      .catch((err) => console.error(err))
+      </div>`);
+    div.innerHTML = tmpl(data);
+    div.dataset.id = data.id;
+    return div;
   }
 
   /**
-  * Make and append a dom node for a new item
-  * @param {object} data - the data to render
-  * @param {Element} target - the DOM element to append to
-  */
-  render(data, target) {
-    let node = this._mkNode(data)
-    target.append(node)
-  }
-
-  /**
-  * Make new dom nodes with image data
-  * @param {Object} data - data for one image container div
+  * Make new dom nodes without data
   *
-  * @return {Object}
+  * @return {Element}
   */
-  _mkNode(data) {
-    let div = document.createElement("div")
-    div.classList.add("wrapper-item")
-    const tmpl = p => this._template(TEMPLATE_STRING)
-    div.innerHTML = tmpl(data)
-    div.dataset.id = data.id
-    return div
+  createPlaceholder() {
+    let div = document.createElement('div');
+    div.classList.add('.wrapper-item');
+    return div;
   }
 
   /**
@@ -60,36 +69,36 @@ export class NodeBuilder {
   _template(literalSections, ...substs) {
     // Use raw literal sections: we don’t want
     // backslashes (\n etc.) to be interpreted
-    let raw = literalSections.raw
+    let raw = literalSections.raw;
 
-    let result = ""
+    let result = '';
 
     substs.forEach((subst, i) => {
       // Retrieve the literal section preceding
       // the current substitution
-      let lit = raw[i]
+      let lit = raw[i];
 
       // In the example, map() returns an array:
       // If substitution is an array (and not a string),
       // we turn it into a string
       if (Array.isArray(subst)) {
-        subst = subst.join("")
+        subst = subst.join("");
       }
 
       // If the substitution is preceded by a dollar sign,
       // we escape special characters in it
       if (lit.endsWith("$")) {
-        subst = htmlEscape(subst)
-        lit = lit.slice(0, -1)
+        subst = htmlEscape(subst);
+        lit = lit.slice(0, -1);
       }
-      result += lit
-      result += subst
+      result += lit;
+      result += subst;
     })
     // Take care of last literal section
     // (Never fails, because an empty template string
     // produces one literal section, an empty string)
-    result += raw[raw.length - 1] // (A)
+    result += raw[raw.length - 1]; // (A)
 
-    return result
+    return result;
   }
 }

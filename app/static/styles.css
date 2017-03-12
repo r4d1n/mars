@@ -5,6 +5,7 @@
 html, body {
   height: 100%;
   width: 100%;
+  overflow: hidden;
 }
 
 body {
@@ -12,12 +13,12 @@ body {
   font-family: monospace;
 }
 
-/* a common helper class */
-/*.hidden {
-  display: none;
-}*/
-
 /* main layout */
+
+#scroll-target {
+  height: inherit;
+  overflow: auto;
+}
 
 div.wrapper-item {
   margin: 0 auto;
@@ -76,3 +77,9 @@ img.photo {
   }
 
 }
+
+/* a common helper class */
+/*.hidden {
+  display: none;
+}*/
+
