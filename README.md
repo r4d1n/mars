@@ -1,6 +1,8 @@
 # mars
 
-####There are two parts to this project:
+**the first pass, a monolithic prototype now left by the wayside.** 
+
+There are two parts to this project:
 
 A **scraper** for saving photos and metadata from the NASA API to my own S3 bucket and Postgres instance and a **web app** for browsing through the images.
 
